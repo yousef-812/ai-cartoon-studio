@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Episode Production Manifest",
+  "type": "object",
+  "required": ["episode_id", "series_id", "shots"],
+  "properties": {
+    "episode_id": {"type": "string"},
+    "series_id": {"type": "string"},
+    "shots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["shot_id", "duration_seconds", "status"],
+        "properties": {
+          "shot_id": {"type": "string"},
+          "duration_seconds": {"type": "number", "minimum": 0.1},
+          "status": {"type": "string"}
+        }
+      }
+    }
+  }
+}
