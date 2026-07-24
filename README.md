@@ -87,4 +87,4 @@ POST   /api/v1/story-jobs/{job_id}/retry
 
 Story jobs are persisted before they are sent to the GPU worker. If a free GPU session stops, the request, attempts, result, and error remain in PostgreSQL and can be retried later.
 
-See [`docs/local-llm.md`](docs/local-llm.md) and [`notebooks/local_llm_colab.ipynb`](notebooks/local_llm_colab.ipynb).
+See [`docs/local-llm.md`](docs/local-llm.md), [`docs/roadmap.md`](docs/roadmap.md), and [`notebooks/local_llm_colab.ipynb`](notebooks/local_llm_colab.ipynb).
