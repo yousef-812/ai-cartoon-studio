@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -38,6 +38,9 @@ class SeriesRecord(Base):
         back_populates="series", cascade="all, delete-orphan"
     )
     locations: Mapped[list["LocationRecord"]] = relationship(
+        back_populates="series", cascade="all, delete-orphan"
+    )
+    story_jobs: Mapped[list["StoryGenerationJobRecord"]] = relationship(
         back_populates="series", cascade="all, delete-orphan"
     )
 
@@ -93,3 +96,31 @@ class LocationRecord(Base):
     )
 
     series: Mapped[SeriesRecord] = relationship(back_populates="locations")
+
+
+class StoryGenerationJobRecord(Base):
+    __tablename__ = "story_generation_jobs"
+
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid4())
+    )
+    series_id: Mapped[str] = mapped_column(
+        ForeignKey("series.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="queued", index=True)
+    provider: Mapped[str] = mapped_column(String(100), nullable=False)
+    model: Mapped[str] = mapped_column(String(300), nullable=False)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    request_payload: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)
+    result_payload: Mapped[dict[str, object] | None] = mapped_column(JSON, nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
+    )
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    series: Mapped[SeriesRecord] = relationship(back_populates="story_jobs")
