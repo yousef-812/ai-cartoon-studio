@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 import httpx
 
+from packages.audio.models import GeneratedAudio, SynthesizedAudio
 from packages.images.errors import ImageProviderResponseError
 from packages.images.models import GeneratedImage, ImageProviderResult
 from packages.videos.errors import VideoProviderResponseError
@@ -126,6 +127,32 @@ class LocalArtifactStore:
         ]
         return result.model_copy(update={"videos": videos})
 
+    def persist_audio(
+        self,
+        audio: SynthesizedAudio,
+        *,
+        series_id: str,
+        voice_job_id: str,
+    ) -> GeneratedAudio:
+        suffix = self._audio_suffix(audio.filename, audio.mime_type)
+        destination = self._write(
+            audio.content,
+            self.root / self._safe(series_id) / "voice-lines" / self._safe(voice_job_id),
+            f"voice{suffix}",
+        )
+        return GeneratedAudio(
+            url=self._public_url(destination),
+            filename=destination.name,
+            storage_path=str(destination),
+            mime_type=audio.mime_type,
+            size_bytes=len(audio.content),
+            checksum_sha256=hashlib.sha256(audio.content).hexdigest(),
+            duration_seconds=audio.duration_seconds,
+            sample_rate=audio.sample_rate,
+            channels=audio.channels,
+            metadata=audio.metadata,
+        )
+
     async def _download(self, url: str, fallback_mime: str) -> tuple[bytes, str]:
         self._validate_url(url)
         async with httpx.AsyncClient(
@@ -195,3 +222,14 @@ class LocalArtifactStore:
             "video/quicktime": ".mov",
             "video/x-matroska": ".mkv",
         }.get(mime_type, ".mp4")
+
+    @staticmethod
+    def _audio_suffix(filename: str, mime_type: str) -> str:
+        suffix = Path(filename).suffix.lower()
+        if suffix in {".wav", ".mp3", ".flac", ".opus", ".ogg"}:
+            return suffix
+        return {
+            "audio/mpeg": ".mp3",
+            "audio/flac": ".flac",
+            "audio/ogg": ".opus",
+        }.get(mime_type, ".wav")
