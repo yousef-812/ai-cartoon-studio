@@ -11,6 +11,7 @@ celery_app = Celery(
         "app.tasks.script",
         "app.tasks.direction",
         "app.tasks.visual",
+        "app.tasks.animation",
     ],
 )
 celery_app.conf.update(
