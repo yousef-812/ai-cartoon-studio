@@ -102,3 +102,49 @@ class AnimationJobRecord(Base):
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class VoiceLineJobRecord(Base):
+    __tablename__ = "voice_line_jobs"
+    __table_args__ = (
+        UniqueConstraint(
+            "script_job_id",
+            "voice_key",
+            name="uq_voice_script_key",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid4())
+    )
+    series_id: Mapped[str] = mapped_column(
+        ForeignKey("series.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    script_job_id: Mapped[str] = mapped_column(
+        ForeignKey("script_generation_jobs.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    character_id: Mapped[str] = mapped_column(
+        ForeignKey("characters.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    voice_key: Mapped[str] = mapped_column(String(500), nullable=False)
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="planned", index=True)
+    review_status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="pending_review", index=True
+    )
+    review_notes: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    provider: Mapped[str] = mapped_column(String(100), nullable=False)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    spec_payload: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)
+    audio_payload: Mapped[dict[str, object] | None] = mapped_column(JSON, nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
+    )
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
