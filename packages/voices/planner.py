@@ -28,7 +28,7 @@ class VoicePlanner:
                 delivery = (
                     f"{line.delivery}. Character speaking style: {character.speaking_style}. "
                     f"Voice identity: {profile.description}. Additional constraints: {constraints}"
-                )
+                )[:300]
                 specs.append(
                     VoiceLineSpec(
                         key=f"scene:{scene.number}:dialogue:{line.order}:voice",
