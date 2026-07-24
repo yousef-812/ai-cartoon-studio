@@ -61,8 +61,24 @@ button.compact { padding: 8px 12px; width: max-content; }
 .scene strong, .scene small { display: block; }
 .scene p { margin: 0; font-size: 14px; }
 .scene em { color: var(--accent); }
+.asset-section { border-top: 1px solid var(--line); padding: 48px 0; }
+.asset-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.asset-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.asset-card { display: grid; align-content: start; border: 1px solid var(--line); background: var(--panel); overflow: hidden; }
+.asset-card.running { border-color: var(--accent); }
+.asset-card.succeeded { border-color: var(--success); }
+.asset-card.failed { border-color: var(--danger); }
+.asset-card.blocked { opacity: .78; }
+.asset-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #090907; border-bottom: 1px solid var(--line); }
+.asset-body { display: grid; gap: 12px; padding: 18px; }
+.asset-body h3 { margin: 0; font-size: 21px; }
+.asset-body > small { color: var(--accent); }
+
+@media (max-width: 1000px) {
+  .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 @media (max-width: 800px) {
   main { padding: 48px 20px; }
-  .workspace, .workspace.full, .row, .actions { grid-template-columns: 1fr; }
+  .workspace, .workspace.full, .row, .actions, .asset-grid { grid-template-columns: 1fr; }
 }
