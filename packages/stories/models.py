@@ -11,6 +11,12 @@ class StoryJobStatus(StrEnum):
     FAILED = "failed"
 
 
+class StoryReviewStatus(StrEnum):
+    PENDING_REVIEW = "pending_review"
+    APPROVED = "approved"
+    CHANGES_REQUESTED = "changes_requested"
+
+
 class StoryGenerationRequest(BaseModel):
     premise: str = Field(min_length=10, max_length=3000)
     target_duration_seconds: int = Field(default=300, ge=60, le=3600)
@@ -49,10 +55,17 @@ class EpisodeStory(BaseModel):
     safety_notes: list[str] = Field(default_factory=list, max_length=50)
 
 
+class StoryReviewRequest(BaseModel):
+    decision: StoryReviewStatus
+    notes: str = Field(default="", max_length=4000)
+
+
 class StoryGenerationJobRead(BaseModel):
     id: str
     series_id: str
     status: StoryJobStatus
+    review_status: StoryReviewStatus = StoryReviewStatus.PENDING_REVIEW
+    review_notes: str = ""
     provider: str
     model: str
     attempts: int
@@ -63,3 +76,4 @@ class StoryGenerationJobRead(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     started_at: datetime | None = None
     completed_at: datetime | None = None
+    reviewed_at: datetime | None = None
