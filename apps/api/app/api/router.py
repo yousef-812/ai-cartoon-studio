@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.routes import (
+    animations,
     characters,
     directions,
     health,
@@ -23,4 +24,5 @@ api_router.include_router(stories.router, tags=["stories"])
 api_router.include_router(scripts.router, tags=["scripts"])
 api_router.include_router(directions.router, tags=["directions"])
 api_router.include_router(visuals.router, tags=["visuals"])
+api_router.include_router(animations.router, tags=["animations"])
 api_router.include_router(production.router, prefix="/production", tags=["production"])
