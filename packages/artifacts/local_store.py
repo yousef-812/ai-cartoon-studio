@@ -8,6 +8,8 @@ import httpx
 
 from packages.images.errors import ImageProviderResponseError
 from packages.images.models import GeneratedImage, ImageProviderResult
+from packages.videos.errors import VideoProviderResponseError
+from packages.videos.models import GeneratedVideo, VideoProviderResult
 
 
 class LocalArtifactStore:
@@ -34,36 +36,22 @@ class LocalArtifactStore:
     ) -> GeneratedImage:
         if image.storage_path:
             return image
-        self._validate_url(image.url)
         try:
-            async with httpx.AsyncClient(
-                timeout=self.timeout_seconds,
-                follow_redirects=True,
-                transport=self.transport,
-            ) as client:
-                response = await client.get(image.url)
-                response.raise_for_status()
-        except httpx.HTTPError as error:
+            content, mime_type = await self._download(image.url, image.mime_type)
+        except (httpx.HTTPError, ValueError) as error:
             raise ImageProviderResponseError(
                 f"Could not persist generated image: {error}"
             ) from error
-
-        content = response.content
-        if not content:
-            raise ImageProviderResponseError("Generated image response was empty")
-        mime_type = response.headers.get("content-type", image.mime_type).split(";", 1)[0]
-        suffix = self._suffix(image.filename, mime_type)
-        directory = self.root / self._safe(series_id) / "visual-assets" / self._safe(asset_id)
-        directory.mkdir(parents=True, exist_ok=True)
-        destination = directory / f"{index:02d}{suffix}"
-        temporary = destination.with_suffix(destination.suffix + ".tmp")
-        temporary.write_bytes(content)
-        os.replace(temporary, destination)
-        checksum = hashlib.sha256(content).hexdigest()
+        suffix = self._image_suffix(image.filename, mime_type)
+        destination = self._write(
+            content,
+            self.root / self._safe(series_id) / "visual-assets" / self._safe(asset_id),
+            f"{index:02d}{suffix}",
+        )
         return image.model_copy(
             update={
                 "storage_path": str(destination),
-                "checksum_sha256": checksum,
+                "checksum_sha256": hashlib.sha256(content).hexdigest(),
                 "mime_type": mime_type,
                 "size_bytes": len(content),
             }
@@ -87,13 +75,86 @@ class LocalArtifactStore:
         ]
         return result.model_copy(update={"images": images})
 
+    async def persist_video(
+        self,
+        video: GeneratedVideo,
+        *,
+        series_id: str,
+        animation_id: str,
+        index: int,
+    ) -> GeneratedVideo:
+        if video.storage_path:
+            return video
+        try:
+            content, mime_type = await self._download(video.url, video.mime_type)
+        except (httpx.HTTPError, ValueError) as error:
+            raise VideoProviderResponseError(
+                f"Could not persist generated video: {error}"
+            ) from error
+        suffix = self._video_suffix(video.filename, mime_type)
+        destination = self._write(
+            content,
+            self.root / self._safe(series_id) / "animated-shots" / self._safe(animation_id),
+            f"{index:02d}{suffix}",
+        )
+        return video.model_copy(
+            update={
+                "storage_path": str(destination),
+                "checksum_sha256": hashlib.sha256(content).hexdigest(),
+                "mime_type": mime_type,
+                "size_bytes": len(content),
+            }
+        )
+
+    async def persist_video_result(
+        self,
+        result: VideoProviderResult,
+        *,
+        series_id: str,
+        animation_id: str,
+    ) -> VideoProviderResult:
+        videos = [
+            await self.persist_video(
+                video,
+                series_id=series_id,
+                animation_id=animation_id,
+                index=index,
+            )
+            for index, video in enumerate(result.videos, start=1)
+        ]
+        return result.model_copy(update={"videos": videos})
+
+    async def _download(self, url: str, fallback_mime: str) -> tuple[bytes, str]:
+        self._validate_url(url)
+        async with httpx.AsyncClient(
+            timeout=self.timeout_seconds,
+            follow_redirects=True,
+            transport=self.transport,
+        ) as client:
+            response = await client.get(url)
+            response.raise_for_status()
+        content = response.content
+        if not content:
+            raise ValueError("Generated artifact response was empty")
+        mime_type = response.headers.get("content-type", fallback_mime).split(";", 1)[0]
+        return content, mime_type
+
+    @staticmethod
+    def _write(content: bytes, directory: Path, filename: str) -> Path:
+        directory.mkdir(parents=True, exist_ok=True)
+        destination = directory / filename
+        temporary = destination.with_suffix(destination.suffix + ".tmp")
+        temporary.write_bytes(content)
+        os.replace(temporary, destination)
+        return destination
+
     def _validate_url(self, url: str) -> None:
         parsed = urlparse(url)
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-            raise ImageProviderResponseError("Generated image URL must use HTTP or HTTPS")
+            raise ValueError("Generated artifact URL must use HTTP or HTTPS")
         if self.allowed_origin and self._origin(url) != self.allowed_origin:
-            raise ImageProviderResponseError(
-                "Generated image URL does not match the configured image provider origin"
+            raise ValueError(
+                "Generated artifact URL does not match the configured provider origin"
             )
 
     @staticmethod
@@ -105,11 +166,11 @@ class LocalArtifactStore:
     def _safe(value: str) -> str:
         cleaned = re.sub(r"[^a-zA-Z0-9._-]+", "-", value).strip(".-")
         if not cleaned:
-            raise ImageProviderResponseError("Artifact path identifier is empty")
+            raise ValueError("Artifact path identifier is empty")
         return cleaned[:200]
 
     @staticmethod
-    def _suffix(filename: str, mime_type: str) -> str:
+    def _image_suffix(filename: str, mime_type: str) -> str:
         suffix = Path(filename).suffix.lower()
         if suffix in {".png", ".jpg", ".jpeg", ".webp"}:
             return suffix
@@ -117,3 +178,14 @@ class LocalArtifactStore:
             "image/jpeg": ".jpg",
             "image/webp": ".webp",
         }.get(mime_type, ".png")
+
+    @staticmethod
+    def _video_suffix(filename: str, mime_type: str) -> str:
+        suffix = Path(filename).suffix.lower()
+        if suffix in {".mp4", ".webm", ".mov", ".mkv"}:
+            return suffix
+        return {
+            "video/webm": ".webm",
+            "video/quicktime": ".mov",
+            "video/x-matroska": ".mkv",
+        }.get(mime_type, ".mp4")
