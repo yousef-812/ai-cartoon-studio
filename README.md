@@ -19,17 +19,21 @@ This repository is intentionally structured around the final product direction. 
 
 ```text
 apps/
-  api/              FastAPI control plane and REST API
+  api/              FastAPI control plane, Celery worker, and REST API
   web/              Next.js production dashboard
 packages/
   agents/           Story, direction, continuity, and quality agents
+  llm/              Self-hosted OpenAI-compatible LLM adapter
+  stories/          Story schemas, prompts, jobs, and validation
   engines/          Provider-independent media production engines
   pipeline/         Episode workflow and shared production models
   contracts/        Cross-service schemas
-infrastructure/     Database and deployment assets
-docs/               Architecture and product decisions
-storage/            Local source assets (ignored)
-renders/            Generated outputs (ignored)
+notebooks/           Colab GPU worker notebook
+scripts/             Local and Lightning AI launch scripts
+infrastructure/      Database and deployment assets
+docs/                Architecture and product decisions
+storage/             Local source assets (ignored)
+renders/             Generated outputs (ignored)
 ```
 
 ## Local development
@@ -42,19 +46,21 @@ docker compose up --build
 - Dashboard: `http://localhost:3000`
 - API: `http://localhost:8000`
 - API health: `http://localhost:8000/api/v1/health`
+- Local LLM health: `http://localhost:8000/api/v1/llm/health`
+
+Docker starts PostgreSQL, Redis, FastAPI, a Celery production worker, and the dashboard. The self-hosted LLM endpoint runs separately on a GPU workstation, Lightning AI, Colab, or another compatible host.
 
 ## Design principles
 
 - A series is a long-lived production entity, not a collection of unrelated videos.
 - Character, voice, wardrobe, world, and story continuity are first-class data.
 - AI providers are replaceable adapters; business logic must not depend on one vendor.
+- The language model is self-hosted and accessed through an OpenAI-compatible protocol.
 - Every generation step is reviewable, repeatable, and cost-tracked.
-- Failed shots are regenerated independently instead of rebuilding an entire episode.
+- Failed jobs and shots are retried independently instead of rebuilding an entire episode.
 - Human approval is required before final export and publishing.
 
 ## Series Bible API
-
-The first production domain is now persisted through SQLAlchemy and PostgreSQL-compatible models.
 
 ```text
 POST   /api/v1/series
@@ -69,9 +75,16 @@ GET    /api/v1/characters/{character_id}
 PATCH  /api/v1/characters/{character_id}
 ```
 
-Series records preserve the visual direction, world rules, prohibited topics, continuity notes,
-locations, and permanent character identities that later production agents must reference.
+## Local story engine
 
-## Current foundation
+```text
+GET    /api/v1/llm/health
+POST   /api/v1/series/{series_id}/story-jobs
+GET    /api/v1/series/{series_id}/story-jobs
+GET    /api/v1/story-jobs/{job_id}
+POST   /api/v1/story-jobs/{job_id}/retry
+```
 
-The initial commit provides the monorepo architecture, API health endpoint, production domain models, provider interfaces, orchestration skeleton, dashboard shell, Docker services, and CI checks. Provider integrations and the first full episode workflow come next.
+Story jobs are persisted before they are sent to the GPU worker. If a free GPU session stops, the request, attempts, result, and error remain in PostgreSQL and can be retried later.
+
+See [`docs/local-llm.md`](docs/local-llm.md) and [`notebooks/local_llm_colab.ipynb`](notebooks/local_llm_colab.ipynb).
