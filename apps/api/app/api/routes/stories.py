@@ -5,7 +5,11 @@ from app.dependencies import get_series_service, get_story_job_service
 from app.tasks.story import generate_story_job
 from packages.common.errors import ConflictError, NotFoundError
 from packages.series.service import SeriesService
-from packages.stories.models import StoryGenerationJobRead, StoryGenerationRequest
+from packages.stories.models import (
+    StoryGenerationJobRead,
+    StoryGenerationRequest,
+    StoryReviewRequest,
+)
 from packages.stories.service import StoryJobService
 
 router = APIRouter()
@@ -90,5 +94,17 @@ def retry_story_job(
             return job
         except Exception as error:
             return service.fail(job.id, f"Could not enqueue story worker: {error}")
+    except (ConflictError, NotFoundError) as error:
+        raise _translate_domain_error(error) from error
+
+
+@router.post("/story-jobs/{job_id}/review", response_model=StoryGenerationJobRead)
+def review_story_job(
+    job_id: str,
+    payload: StoryReviewRequest,
+    service: StoryJobService = Depends(get_story_job_service),
+) -> StoryGenerationJobRead:
+    try:
+        return service.review(job_id, payload)
     except (ConflictError, NotFoundError) as error:
         raise _translate_domain_error(error) from error
