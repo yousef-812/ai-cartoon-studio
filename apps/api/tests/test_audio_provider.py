@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 import httpx
 
@@ -11,7 +12,7 @@ def test_audio_provider_sends_voice_context_and_returns_binary_audio() -> None:
 
     def handler(request: httpx.Request) -> httpx.Response:
         if request.url.path == "/v1/audio/speech":
-            observed.update(request.read() and __import__("json").loads(request.content))
+            observed.update(json.loads(request.content))
             return httpx.Response(
                 200,
                 content=b"RIFF-fake-wave",
