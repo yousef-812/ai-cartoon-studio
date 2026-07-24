@@ -4,6 +4,7 @@ from packages.stories.models import (
     EpisodeStory,
     StoryGenerationJobRead,
     StoryGenerationRequest,
+    StoryReviewRequest,
 )
 
 
@@ -27,3 +28,7 @@ class StoryJobRepository(Protocol):
     def complete(self, job_id: str, result: EpisodeStory) -> StoryGenerationJobRead | None: ...
 
     def fail(self, job_id: str, error: str) -> StoryGenerationJobRead | None: ...
+
+    def review(
+        self, job_id: str, request: StoryReviewRequest
+    ) -> StoryGenerationJobRead | None: ...
