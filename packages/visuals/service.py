@@ -31,6 +31,9 @@ class VisualAssetService:
     def list_for_series(self, series_id: str) -> list[VisualAssetRead]:
         return self.repository.list_for_series(series_id)
 
+    def list_for_direction(self, direction_job_id: str) -> list[VisualAssetRead]:
+        return self.repository.list_for_direction(direction_job_id)
+
     def queue(self, asset_id: str) -> VisualAssetRead:
         asset = self.get(asset_id)
         if asset.status not in {
