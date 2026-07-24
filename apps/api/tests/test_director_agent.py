@@ -143,10 +143,14 @@ def test_director_agent_repairs_unknown_character_and_covers_dialogue() -> None:
         series_id=series.id,
         name="Mira",
         role=CharacterRole.PROTAGONIST,
+        age_range="12-14",
         description="A curious inventor who learns to slow down.",
+        personality_traits=["curious", "brave", "impatient"],
         visual_identity=VisualIdentity(
             reference_prompt="Teen inventor with round goggles and an amber jacket."
         ),
+        wardrobe={"default": "amber jacket, navy trousers, cream boots"},
+        speaking_style="Fast, optimistic, and precise when focused.",
         voice_profile=VoiceProfile(),
     )
 
