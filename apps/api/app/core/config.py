@@ -19,6 +19,14 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 300
     llm_max_retries: int = 2
     llm_json_response_format: bool = True
+
+    image_provider: str = "local-comfyui"
+    image_base_url: str = ""
+    image_workflow_path: str = "./workflows/comfyui/sdxl.json"
+    image_client_id: str = "ai-cartoon-studio"
+    image_timeout_seconds: float = 600
+    image_poll_interval_seconds: float = 2
+
     celery_task_always_eager: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
