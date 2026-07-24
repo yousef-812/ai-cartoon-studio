@@ -1,6 +1,7 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+from app.audio_provider import build_audio_provider
 from app.db.session import get_db
 from app.image_provider import build_image_provider
 from app.llm_provider import build_llm_provider
@@ -11,8 +12,10 @@ from app.repositories.scripts import SQLScriptJobRepository
 from app.repositories.series import SQLSeriesRepository
 from app.repositories.stories import SQLStoryJobRepository
 from app.repositories.visuals import SQLVisualAssetRepository
+from app.repositories.voices import SQLVoiceJobRepository
 from app.video_provider import build_video_provider
 from packages.animations.service import AnimationJobService
+from packages.audio.openai_compatible import OpenAICompatibleAudioProvider
 from packages.characters.service import CharacterService
 from packages.direction.service import DirectionJobService
 from packages.images.comfyui import ComfyUIImageProvider
@@ -22,6 +25,7 @@ from packages.series.service import SeriesService
 from packages.stories.service import StoryJobService
 from packages.videos.comfyui import ComfyUIVideoProvider
 from packages.visuals.service import VisualAssetService
+from packages.voices.service import VoiceJobService
 
 
 def get_series_service(session: Session = Depends(get_db)) -> SeriesService:
@@ -53,6 +57,10 @@ def get_animation_job_service(session: Session = Depends(get_db)) -> AnimationJo
     return AnimationJobService(SQLAnimationJobRepository(session), visual_repository)
 
 
+def get_voice_job_service(session: Session = Depends(get_db)) -> VoiceJobService:
+    return VoiceJobService(SQLVoiceJobRepository(session))
+
+
 def get_llm_provider() -> OpenAICompatibleLLMProvider:
     return build_llm_provider()
 
@@ -63,3 +71,7 @@ def get_image_provider() -> ComfyUIImageProvider:
 
 def get_video_provider() -> ComfyUIVideoProvider:
     return build_video_provider()
+
+
+def get_audio_provider() -> OpenAICompatibleAudioProvider:
+    return build_audio_provider()
