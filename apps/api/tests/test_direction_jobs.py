@@ -7,7 +7,7 @@ from app.db.session import SessionLocal
 from app.main import app
 from app.repositories.scripts import SQLScriptJobRepository
 from app.repositories.stories import SQLStoryJobRepository
-from packages.scripts.models import EpisodeScript, ScriptGenerationRequest, ScriptReviewRequest
+from packages.scripts.models import EpisodeScript, ScriptGenerationRequest
 from packages.stories.models import (
     EpisodeStory,
     StoryGenerationRequest,
