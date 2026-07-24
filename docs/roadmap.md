@@ -10,7 +10,7 @@ This roadmap preserves one final direction: a complete AI cartoon production stu
 - Lightning AI launcher and Google Colab GPU notebook.
 - Persistent generation jobs with retries, validation, status tracking, and human review gates.
 
-## Completed pre-production pipeline
+## Completed production pipeline
 
 ### 1. Story engine
 
@@ -47,27 +47,35 @@ This roadmap preserves one final direction: a complete AI cartoon production stu
 - Copy generated clips into durable project storage with MIME type, size, and SHA-256 checksum.
 - Review or retry each failed shot independently without rebuilding upstream stages.
 
+### 6. Voice acting foundation
+
+- Store a permanent provider, voice ID, language, description, speed, and pitch for every speaking character.
+- Convert every approved screenplay dialogue line into an independent emotion-aware voice job.
+- Send text, character voice, language, emotion, delivery, speed, pitch, format, and timing to a replaceable self-hosted TTS endpoint.
+- Copy generated audio into durable project storage with MIME type, size, duration metadata, and SHA-256 checksum.
+- Review or retry one line independently without regenerating the screenplay or other production stages.
+
 ## Next production phases
 
-### 6. Advanced character consistency workflows
+### 7. Advanced character consistency and animated-shot quality
 
 - Add pose sheets, LoRA/IP-Adapter reference workflows, and identity similarity checks.
-- Add optional object storage while preserving the same artifact contract.
-- Track model, checkpoint, LoRA, ControlNet, and commercial-use metadata for every asset.
-- Add automated flicker, face-drift, costume-drift, and background-drift checks for animated clips.
+- Add automated flicker, face-drift, costume-drift, background-drift, and motion-quality checks.
+- Track model, checkpoint, LoRA, ControlNet, and commercial-use metadata for every visual asset.
 
-### 7. Voice acting and lip sync
+### 8. Lip sync and dialogue placement
 
-- Assign stable self-hosted voices to characters.
-- Generate emotion-aware dialogue and exact timing metadata.
-- Run lip sync and validate audio/visual alignment.
+- Match approved dialogue lines to the shots that cover their screenplay orders.
+- Run replaceable self-hosted lip-sync workflows for speaking shots only.
+- Align audio duration, pauses, mouth movement, and animated clip timing.
+- Review or regenerate lip sync without rebuilding animation or voice acting.
 
-### 8. Sound design and music
+### 9. Sound design and music
 
 - Generate or select licensed ambience, effects, and music.
 - Mix dialogue and music automatically with review controls.
 
-### 9. Quality control and final render
+### 10. Quality control and final render
 
 - Detect character drift, visual artifacts, continuity errors, silence, clipping, and timing issues.
 - Render the full episode, subtitles, thumbnail, and Shorts candidates.
