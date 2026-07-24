@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   api:
     runs-on: ubuntu-latest
@@ -17,7 +21,28 @@ jobs:
           python-version: "3.11"
       - run: pip install -e ".[dev]"
       - run: ruff check . ../../packages
-      - run: pytest
+      - name: Run pytest
+        id: pytest
+        continue-on-error: true
+        run: |
+          pytest > pytest-report.txt 2>&1
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+      - name: Comment pytest report
+        if: steps.pytest.outputs.exit_code != '0' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('apps/api/pytest-report.txt', 'utf8');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `### Artifact route test report\n\n\`\`\`text\n${report.slice(-12000)}\n\`\`\``
+            });
+      - name: Enforce pytest result
+        if: steps.pytest.outputs.exit_code != '0'
+        run: exit 1
 
   web:
     runs-on: ubuntu-latest
