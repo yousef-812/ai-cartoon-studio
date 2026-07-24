@@ -34,6 +34,13 @@ class Settings(BaseSettings):
     video_timeout_seconds: float = 1200
     video_poll_interval_seconds: float = 3
 
+    voice_provider: str = "local-openai-compatible-tts"
+    voice_base_url: str = ""
+    voice_api_key: str = ""
+    voice_model: str = "local-tts"
+    voice_timeout_seconds: float = 300
+    voice_max_retries: int = 2
+
     celery_task_always_eager: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
