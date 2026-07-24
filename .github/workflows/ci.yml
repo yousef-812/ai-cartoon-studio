@@ -16,7 +16,19 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -e ".[dev]"
-      - run: ruff check . ../../packages
+      - name: Run Ruff
+        run: |
+          set +e
+          ruff check . ../../packages --output-format=concise > ruff-report.txt 2>&1
+          exit_code=$?
+          cat ruff-report.txt
+          exit $exit_code
+      - name: Upload Ruff report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruff-report
+          path: apps/api/ruff-report.txt
       - run: pytest
 
   web:
