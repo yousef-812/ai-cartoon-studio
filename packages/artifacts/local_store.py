@@ -50,6 +50,7 @@ class LocalArtifactStore:
         )
         return image.model_copy(
             update={
+                "url": self._public_url(destination),
                 "storage_path": str(destination),
                 "checksum_sha256": hashlib.sha256(content).hexdigest(),
                 "mime_type": mime_type,
@@ -99,6 +100,7 @@ class LocalArtifactStore:
         )
         return video.model_copy(
             update={
+                "url": self._public_url(destination),
                 "storage_path": str(destination),
                 "checksum_sha256": hashlib.sha256(content).hexdigest(),
                 "mime_type": mime_type,
@@ -147,6 +149,10 @@ class LocalArtifactStore:
         temporary.write_bytes(content)
         os.replace(temporary, destination)
         return destination
+
+    def _public_url(self, destination: Path) -> str:
+        relative = destination.resolve().relative_to(self.root)
+        return f"/artifacts/{relative.as_posix()}"
 
     def _validate_url(self, url: str) -> None:
         parsed = urlparse(url)
