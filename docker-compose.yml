@@ -36,6 +36,21 @@ services:
       redis:
         condition: service_started
 
+  worker:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: celery -A app.worker.celery_app worker --loglevel=INFO --concurrency=1
+    env_file: .env
+    volumes:
+      - ./storage:/workspace/storage
+      - ./renders:/workspace/renders
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
   web:
     build:
       context: apps/web
