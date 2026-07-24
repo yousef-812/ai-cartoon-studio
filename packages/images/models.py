@@ -26,6 +26,10 @@ class ImageProviderSubmission(BaseModel):
 class GeneratedImage(BaseModel):
     url: str
     filename: str = ""
+    storage_path: str = ""
+    checksum_sha256: str = ""
+    mime_type: str = "image/png"
+    size_bytes: int | None = None
     width: int | None = None
     height: int | None = None
     seed: int | None = None
