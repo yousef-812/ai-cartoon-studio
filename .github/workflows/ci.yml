@@ -25,8 +25,12 @@ jobs:
         run: pytest tests/test_script_agent.py tests/test_script_jobs.py tests/test_director_agent.py tests/test_direction_jobs.py
       - name: Test images and visual assets
         run: pytest tests/test_comfyui_provider.py tests/test_visual_asset_planner.py tests/test_local_artifact_store.py
-      - name: Test animated shots
-        run: pytest tests/test_comfyui_video_provider.py tests/test_animation_planner.py tests/test_video_artifact_store.py
+      - name: Test ComfyUI video provider
+        run: pytest tests/test_comfyui_video_provider.py
+      - name: Test animation planner
+        run: pytest tests/test_animation_planner.py
+      - name: Test video artifact storage
+        run: pytest tests/test_video_artifact_store.py
 
   web:
     runs-on: ubuntu-latest
