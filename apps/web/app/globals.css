@@ -6,6 +6,8 @@
   --muted: #aaa499;
   --accent: #d8a84e;
   --line: #343129;
+  --success: #77c58b;
+  --danger: #f08c7c;
 }
 
 * { box-sizing: border-box; }
@@ -18,6 +20,8 @@ h2 { margin: 10px 0 18px; font-size: 38px; letter-spacing: -.04em; }
 .lede { max-width: 720px; color: var(--muted); font-size: 20px; line-height: 1.6; }
 .eyebrow { color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: .18em; }
 .message { color: var(--accent); }
+.muted, .warning { color: var(--muted); line-height: 1.5; }
+.warning { border-left: 3px solid var(--accent); padding-left: 12px; }
 .workspace { display: grid; grid-template-columns: 1.2fr .8fr; border-top: 1px solid var(--line); padding: 56px 0; gap: 1px; background: var(--line); }
 form, aside { display: flex; flex-direction: column; gap: 14px; padding: 30px; background: var(--panel); }
 fieldset { display: flex; flex-direction: column; gap: 14px; padding: 0; border: 0; }
@@ -27,13 +31,30 @@ input:focus, textarea:focus, select:focus { outline: 1px solid var(--accent); }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 button { border: 0; background: var(--accent); color: #16120c; padding: 15px 20px; font-weight: 800; cursor: pointer; }
 button:disabled { opacity: .45; cursor: not-allowed; }
+button.secondary { background: transparent; color: var(--text); border: 1px solid var(--line); }
+button.compact { padding: 8px 12px; width: max-content; }
 .card { display: grid; gap: 10px; text-align: left; background: #201e19; color: var(--text); border: 1px solid var(--line); }
 .card.active { border-color: var(--accent); box-shadow: inset 3px 0 var(--accent); }
-.card span, .character p { color: var(--muted); line-height: 1.5; }
+.card span, .character p, .job > p, .story-result p { color: var(--muted); line-height: 1.5; }
 .card small, .character small { color: var(--accent); text-transform: uppercase; }
-.character { padding: 20px; border: 1px solid var(--line); background: #201e19; }
-.character h3 { margin: 10px 0; font-size: 24px; }
+.character, .job { padding: 20px; border: 1px solid var(--line); background: #201e19; }
+.character h3, .story-result h3 { margin: 10px 0; font-size: 24px; }
 .character p { margin: 0; }
+.health-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+.health { border: 1px solid currentColor; border-radius: 999px; padding: 7px 11px; font-size: 11px; font-weight: 900; letter-spacing: .12em; }
+.health.online { color: var(--success); }
+.health.offline { color: var(--danger); }
+.health-row small { color: var(--muted); }
+.job { display: grid; gap: 12px; }
+.job.running { border-color: var(--accent); }
+.job.succeeded { border-color: var(--success); }
+.job.failed { border-color: var(--danger); }
+.job-head { display: flex; justify-content: space-between; align-items: center; }
+.status { text-transform: uppercase; font-size: 11px; font-weight: 900; letter-spacing: .12em; }
+.error { color: var(--danger) !important; }
+.story-result { border-top: 1px solid var(--line); padding-top: 14px; }
+.story-result strong { display: block; line-height: 1.5; }
+.story-result small { color: var(--accent); }
 
 @media (max-width: 800px) {
   main { padding: 48px 20px; }
