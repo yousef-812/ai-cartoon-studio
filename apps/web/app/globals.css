@@ -26,6 +26,7 @@ h2 { margin: 10px 0 18px; font-size: 38px; letter-spacing: -.04em; }
 .workspace.full { grid-template-columns: .65fr 1.35fr; }
 form, aside, .panel { display: flex; flex-direction: column; gap: 14px; padding: 30px; background: var(--panel); }
 fieldset { display: flex; flex-direction: column; gap: 14px; padding: 0; border: 0; }
+label { display: grid; gap: 7px; color: var(--muted); font-size: 13px; }
 input, textarea, select { width: 100%; border: 1px solid var(--line); background: #12110e; color: var(--text); padding: 14px; }
 textarea { min-height: 92px; resize: vertical; }
 input:focus, textarea:focus, select:focus { outline: 1px solid var(--accent); }
@@ -73,6 +74,10 @@ button.compact { padding: 8px 12px; width: max-content; }
 .asset-body { display: grid; gap: 12px; padding: 18px; }
 .asset-body h3 { margin: 0; font-size: 21px; }
 .asset-body > small { color: var(--accent); }
+.video-result { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.video-result video { width: 100%; aspect-ratio: 16 / 9; background: #090907; border: 1px solid var(--line); }
+.video-result small { color: var(--accent); }
+.video-result code { overflow-wrap: anywhere; color: var(--muted); font-size: 11px; }
 
 @media (max-width: 1000px) {
   .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
