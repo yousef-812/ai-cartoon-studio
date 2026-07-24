@@ -6,7 +6,12 @@ celery_app = Celery(
     "ai_cartoon_studio",
     broker=settings.redis_url,
     backend=settings.redis_url,
-    include=["app.tasks.story", "app.tasks.script", "app.tasks.direction"],
+    include=[
+        "app.tasks.story",
+        "app.tasks.script",
+        "app.tasks.direction",
+        "app.tasks.visual",
+    ],
 )
 celery_app.conf.update(
     broker_connection_retry_on_startup=True,
