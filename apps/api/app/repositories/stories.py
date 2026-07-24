@@ -9,6 +9,8 @@ from packages.stories.models import (
     StoryGenerationJobRead,
     StoryGenerationRequest,
     StoryJobStatus,
+    StoryReviewRequest,
+    StoryReviewStatus,
 )
 
 
@@ -27,6 +29,8 @@ class SQLStoryJobRepository:
             id=record.id,
             series_id=record.series_id,
             status=StoryJobStatus(record.status),
+            review_status=StoryReviewStatus(record.review_status),
+            review_notes=record.review_notes,
             provider=record.provider,
             model=record.model,
             attempts=record.attempts,
@@ -37,6 +41,7 @@ class SQLStoryJobRepository:
             updated_at=record.updated_at,
             started_at=record.started_at,
             completed_at=record.completed_at,
+            reviewed_at=record.reviewed_at,
         )
 
     def create(
@@ -49,6 +54,7 @@ class SQLStoryJobRepository:
         record = StoryGenerationJobRecord(
             series_id=series_id,
             status=StoryJobStatus.QUEUED.value,
+            review_status=StoryReviewStatus.PENDING_REVIEW.value,
             provider=provider,
             model=model,
             request_payload=request.model_dump(mode="json"),
@@ -90,8 +96,11 @@ class SQLStoryJobRepository:
         if record is None:
             return None
         record.status = StoryJobStatus.QUEUED.value
+        record.review_status = StoryReviewStatus.PENDING_REVIEW.value
+        record.review_notes = ""
         record.error = None
         record.completed_at = None
+        record.reviewed_at = None
         record.updated_at = datetime.now(UTC)
         self.session.commit()
         self.session.refresh(record)
@@ -103,9 +112,12 @@ class SQLStoryJobRepository:
             return None
         now = datetime.now(UTC)
         record.status = StoryJobStatus.SUCCEEDED.value
+        record.review_status = StoryReviewStatus.PENDING_REVIEW.value
+        record.review_notes = ""
         record.result_payload = result.model_dump(mode="json")
         record.error = None
         record.completed_at = now
+        record.reviewed_at = None
         record.updated_at = now
         self.session.commit()
         self.session.refresh(record)
@@ -119,6 +131,21 @@ class SQLStoryJobRepository:
         record.status = StoryJobStatus.FAILED.value
         record.error = error[:8000]
         record.completed_at = now
+        record.updated_at = now
+        self.session.commit()
+        self.session.refresh(record)
+        return self._to_read(record)
+
+    def review(
+        self, job_id: str, request: StoryReviewRequest
+    ) -> StoryGenerationJobRead | None:
+        record = self.session.get(StoryGenerationJobRecord, job_id)
+        if record is None:
+            return None
+        now = datetime.now(UTC)
+        record.review_status = request.decision.value
+        record.review_notes = request.notes
+        record.reviewed_at = now
         record.updated_at = now
         self.session.commit()
         self.session.refresh(record)
