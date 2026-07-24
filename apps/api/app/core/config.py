@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     image_timeout_seconds: float = 600
     image_poll_interval_seconds: float = 2
 
+    video_provider: str = "local-comfyui-video"
+    video_base_url: str = ""
+    video_workflow_path: str = "../../workflows/comfyui/svd.json"
+    video_client_id: str = "ai-cartoon-studio-video"
+    video_timeout_seconds: float = 1200
+    video_poll_interval_seconds: float = 3
+
     celery_task_always_eager: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
