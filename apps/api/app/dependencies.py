@@ -4,10 +4,12 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.llm_provider import build_llm_provider
 from app.repositories.characters import SQLCharacterRepository
+from app.repositories.directions import SQLDirectionJobRepository
 from app.repositories.scripts import SQLScriptJobRepository
 from app.repositories.series import SQLSeriesRepository
 from app.repositories.stories import SQLStoryJobRepository
 from packages.characters.service import CharacterService
+from packages.direction.service import DirectionJobService
 from packages.llm.openai_compatible import OpenAICompatibleLLMProvider
 from packages.scripts.service import ScriptJobService
 from packages.series.service import SeriesService
@@ -28,6 +30,10 @@ def get_story_job_service(session: Session = Depends(get_db)) -> StoryJobService
 
 def get_script_job_service(session: Session = Depends(get_db)) -> ScriptJobService:
     return ScriptJobService(SQLScriptJobRepository(session))
+
+
+def get_direction_job_service(session: Session = Depends(get_db)) -> DirectionJobService:
+    return DirectionJobService(SQLDirectionJobRepository(session))
 
 
 def get_llm_provider() -> OpenAICompatibleLLMProvider:
