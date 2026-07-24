@@ -12,6 +12,7 @@ from app.api.routes import (
     series,
     stories,
     visuals,
+    voices,
 )
 
 api_router = APIRouter()
@@ -25,4 +26,5 @@ api_router.include_router(scripts.router, tags=["scripts"])
 api_router.include_router(directions.router, tags=["directions"])
 api_router.include_router(visuals.router, tags=["visuals"])
 api_router.include_router(animations.router, tags=["animations"])
+api_router.include_router(voices.router, tags=["voices"])
 api_router.include_router(production.router, prefix="/production", tags=["production"])
