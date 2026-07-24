@@ -1,5 +1,10 @@
 from packages.common.errors import ConflictError, NotFoundError
-from packages.stories.models import StoryGenerationJobRead, StoryGenerationRequest, StoryJobStatus
+from packages.stories.models import (
+    StoryGenerationJobRead,
+    StoryGenerationRequest,
+    StoryJobStatus,
+    StoryReviewRequest,
+)
 from packages.stories.repository import StoryJobRepository
 
 
@@ -39,3 +44,12 @@ class StoryJobService:
         if queued is None:
             raise NotFoundError("Story generation job not found")
         return queued
+
+    def review(self, job_id: str, request: StoryReviewRequest) -> StoryGenerationJobRead:
+        job = self.get(job_id)
+        if job.status is not StoryJobStatus.SUCCEEDED:
+            raise ConflictError("Only completed stories can be reviewed")
+        reviewed = self.repository.review(job_id, request)
+        if reviewed is None:
+            raise NotFoundError("Story generation job not found")
+        return reviewed
