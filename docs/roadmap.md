@@ -37,21 +37,24 @@ This roadmap preserves one final direction: a complete AI cartoon production stu
 - Use a replaceable self-hosted ComfyUI provider with configurable workflow bindings.
 - Persist prompts, seeds, provider job IDs, results, retries, dependencies, and review decisions.
 - Block shot keyframes until their required character references and backgrounds are approved.
+- Copy generated images into durable project storage and serve stable `/artifacts` URLs.
+
+### 5. Animated shot foundation
+
+- Convert approved, permanently stored keyframes and shot plans into independent video jobs.
+- Upload keyframes to replaceable local ComfyUI video workflows and extract MP4 outputs.
+- Preserve exact shot duration, frame rate, motion strength, camera direction, and continuity prompts.
+- Copy generated clips into durable project storage with MIME type, size, and SHA-256 checksum.
+- Review or retry each failed shot independently without rebuilding upstream stages.
 
 ## Next production phases
 
-### 5. Character consistency workflows
+### 6. Advanced character consistency workflows
 
 - Add pose sheets, LoRA/IP-Adapter reference workflows, and identity similarity checks.
-- Store approved reference images in durable object storage rather than temporary provider URLs.
+- Add optional object storage while preserving the same artifact contract.
 - Track model, checkpoint, LoRA, ControlNet, and commercial-use metadata for every asset.
-
-### 6. Animated shot production
-
-- Convert approved keyframes and shot plans into animated clips.
-- Support replaceable local ComfyUI video workflows and optional cloud providers.
-- Track first frame, last frame, motion prompt, duration, frame rate, and regeneration history.
-- Regenerate failed shots independently.
+- Add automated flicker, face-drift, costume-drift, and background-drift checks for animated clips.
 
 ### 7. Voice acting and lip sync
 
