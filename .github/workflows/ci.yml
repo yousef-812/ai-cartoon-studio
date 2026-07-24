@@ -4,10 +4,6 @@ on:
   push:
   pull_request:
 
-permissions:
-  contents: read
-  pull-requests: write
-
 jobs:
   api:
     runs-on: ubuntu-latest
@@ -21,31 +17,16 @@ jobs:
           python-version: "3.11"
       - run: pip install -e ".[dev]"
       - run: ruff check . ../../packages
-      - name: Run pytest
-        id: pytest
-        continue-on-error: true
-        run: |
-          set +e
-          pytest -vv --maxfail=1 > pytest-report.txt 2>&1
-          code=$?
-          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
-          exit 0
-      - name: Comment pytest report
-        if: steps.pytest.outputs.exit_code != '0' && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const report = fs.readFileSync('apps/api/pytest-report.txt', 'utf8');
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: `### Flaky animation test report\n\n\`\`\`text\n${report.slice(-15000)}\n\`\`\``
-            });
-      - name: Enforce pytest result
-        if: steps.pytest.outputs.exit_code != '0'
-        run: exit 1
+      - name: Test core API
+        run: pytest tests/test_health.py tests/test_production.py tests/test_series_bible.py
+      - name: Test local LLM and stories
+        run: pytest tests/test_llm_provider.py tests/test_story_agent.py tests/test_story_jobs.py
+      - name: Test scripts and direction
+        run: pytest tests/test_script_agent.py tests/test_script_jobs.py tests/test_director_agent.py tests/test_direction_jobs.py
+      - name: Test images and visual assets
+        run: pytest tests/test_comfyui_provider.py tests/test_visual_asset_planner.py tests/test_local_artifact_store.py
+      - name: Test animated shots
+        run: pytest tests/test_comfyui_video_provider.py tests/test_animation_planner.py tests/test_video_artifact_store.py
 
   web:
     runs-on: ubuntu-latest
