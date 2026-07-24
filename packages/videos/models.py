@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, model_validator
 from typing import Self
+
+from pydantic import BaseModel, Field, model_validator
 
 
 class VideoProviderHealth(BaseModel):
