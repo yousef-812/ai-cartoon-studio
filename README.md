@@ -52,6 +52,26 @@ docker compose up --build
 - Failed shots are regenerated independently instead of rebuilding an entire episode.
 - Human approval is required before final export and publishing.
 
+## Series Bible API
+
+The first production domain is now persisted through SQLAlchemy and PostgreSQL-compatible models.
+
+```text
+POST   /api/v1/series
+GET    /api/v1/series
+GET    /api/v1/series/{series_id}
+PATCH  /api/v1/series/{series_id}
+POST   /api/v1/series/{series_id}/locations
+GET    /api/v1/series/{series_id}/locations
+POST   /api/v1/series/{series_id}/characters
+GET    /api/v1/series/{series_id}/characters
+GET    /api/v1/characters/{character_id}
+PATCH  /api/v1/characters/{character_id}
+```
+
+Series records preserve the visual direction, world rules, prohibited topics, continuity notes,
+locations, and permanent character identities that later production agents must reference.
+
 ## Current foundation
 
 The initial commit provides the monorepo architecture, API health endpoint, production domain models, provider interfaces, orchestration skeleton, dashboard shell, Docker services, and CI checks. Provider integrations and the first full episode workflow come next.
