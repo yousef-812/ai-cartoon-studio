@@ -1,3 +1,5 @@
+import pytest
+
 from packages.characters.models import (
     CharacterRead,
     CharacterRole,
@@ -107,5 +109,5 @@ def test_voice_planner_uses_character_voice_and_dialogue_emotion() -> None:
     assert specs[0].character_id == character.id
     assert specs[0].synthesis.voice_id == "mira-main"
     assert specs[0].synthesis.emotion == "focused alarm"
-    assert specs[0].synthesis.speed == 1.155
+    assert specs[0].synthesis.speed == pytest.approx(1.155)
     assert specs[0].pause_after_ms == 350
