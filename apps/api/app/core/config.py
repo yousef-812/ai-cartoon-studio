@@ -12,6 +12,15 @@ class Settings(BaseSettings):
     render_path: str = "./renders"
     cors_origins: list[str] = ["http://localhost:3000"]
 
+    llm_provider: str = "local-openai-compatible"
+    llm_base_url: str = ""
+    llm_api_key: str = ""
+    llm_model: str = "Qwen/Qwen2.5-7B-Instruct-AWQ"
+    llm_timeout_seconds: float = 300
+    llm_max_retries: int = 2
+    llm_json_response_format: bool = True
+    celery_task_always_eager: bool = False
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
