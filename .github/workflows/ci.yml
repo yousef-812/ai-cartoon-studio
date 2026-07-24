@@ -24,7 +24,17 @@ jobs:
       - name: Run Ruff
         id: ruff
         continue-on-error: true
-        run: ruff check . ../../packages --output-format=concise > ruff-report.txt 2>&1
+        run: |
+          set +e
+          ruff check . ../../packages --fix > ruff-output.txt 2>&1
+          ruff_exit=$?
+          git diff > ruff-report.txt
+          printf '\nRuff output:\n' >> ruff-report.txt
+          cat ruff-output.txt >> ruff-report.txt
+          if ! git diff --quiet; then
+            exit 1
+          fi
+          exit $ruff_exit
       - name: Report Ruff failure
         if: steps.ruff.outcome == 'failure' && github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -36,7 +46,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: `### Ruff report\n\n\`\`\`text\n${report}\n\`\`\``
+              body: `### Ruff report\n\n\`\`\`diff\n${report}\n\`\`\``
             });
       - name: Enforce Ruff result
         if: steps.ruff.outcome == 'failure'
