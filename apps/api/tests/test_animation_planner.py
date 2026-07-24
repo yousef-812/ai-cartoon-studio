@@ -66,6 +66,9 @@ def test_animation_planner_requires_approved_stored_keyframes(tmp_path) -> None:
                 ),
                 images=[
                     GeneratedImage(
+                        url=(
+                            f"/artifacts/series-1/visual-assets/asset-{scene_number}/01.png"
+                        ),
                         filename=keyframe_path.name,
                         storage_path=str(keyframe_path),
                     )
