@@ -12,6 +12,7 @@ celery_app = Celery(
         "app.tasks.direction",
         "app.tasks.visual",
         "app.tasks.animation",
+        "app.tasks.voice",
     ],
 )
 celery_app.conf.update(
