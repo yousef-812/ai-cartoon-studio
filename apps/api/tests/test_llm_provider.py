@@ -2,7 +2,9 @@ import asyncio
 import json
 
 import httpx
+import pytest
 
+from packages.llm.errors import LLMResponseError
 from packages.llm.models import LLMMessage
 from packages.llm.openai_compatible import OpenAICompatibleLLMProvider
 
@@ -23,7 +25,8 @@ def test_openai_compatible_provider_health_and_json_generation() -> None:
                                 "<think>Check the requested schema before answering.</think>\n"
                                 '```json\n{"title": "A valid story"}\n```'
                             )
-                        }
+                        },
+                        "finish_reason": "stop",
                     }
                 ]
             },
@@ -43,3 +46,27 @@ def test_openai_compatible_provider_health_and_json_generation() -> None:
 
     assert health.available is True
     assert result == {"title": "A valid story"}
+
+
+def test_openai_compatible_provider_rejects_truncated_json() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {"content": '{"title": "An unfinished response'},
+                        "finish_reason": "length",
+                    }
+                ]
+            },
+        )
+
+    provider = OpenAICompatibleLLMProvider(
+        base_url="https://local.test/v1",
+        model="local-model",
+        transport=httpx.MockTransport(handler),
+    )
+
+    with pytest.raises(LLMResponseError, match="truncated"):
+        asyncio.run(provider.generate_json([LLMMessage(role="user", content="Return JSON")]))
