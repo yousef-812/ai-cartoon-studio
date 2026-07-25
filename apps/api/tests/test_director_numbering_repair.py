@@ -68,3 +68,27 @@ def test_director_normalizes_scene_and_local_shot_numbers_without_mutating_paylo
     assert [shot["number"] for shot in repaired["scenes"][1]["shots"]] == [1, 2, 3]
     assert [shot["scene_number"] for shot in repaired["scenes"][1]["shots"]] == [2, 2, 2]
     assert repaired["scenes"][2]["shots"][0] == {"number": 1, "scene_number": 3}
+
+
+def test_director_normalizes_shot_scene_ids_before_rejecting_extra_scenes() -> None:
+    payload = {
+        "scenes": [
+            {
+                "scene_number": 1,
+                "shots": [
+                    {"number": 1, "scene_number": 99},
+                    {"number": 2, "scene_number": 1},
+                ],
+            },
+            {"scene_number": 2, "shots": [{"number": 3, "scene_number": 7}]},
+            {"scene_number": 3, "shots": [{"number": 4, "scene_number": 8}]},
+            {"scene_number": 4, "shots": [{"number": 5, "scene_number": 9}]},
+        ]
+    }
+
+    repaired = DirectorAgent._normalize_scene_and_shot_numbering(payload, _script())
+
+    assert repaired["scenes"][0]["shots"][0] == {"number": 1, "scene_number": 1}
+    assert repaired["scenes"][1]["shots"][0] == {"number": 1, "scene_number": 2}
+    assert repaired["scenes"][2]["shots"][0] == {"number": 1, "scene_number": 3}
+    assert repaired["scenes"][3]["shots"][0] == {"number": 1, "scene_number": 4}
