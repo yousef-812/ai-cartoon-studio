@@ -135,6 +135,12 @@ class OpenAICompatibleLLMProvider:
     @staticmethod
     def _parse_json(content: str) -> dict[str, object]:
         cleaned = content.strip()
+        cleaned = re.sub(
+            r"^(?:\s*<think>.*?</think>\s*)+",
+            "",
+            cleaned,
+            flags=re.DOTALL | re.IGNORECASE,
+        )
         fence = re.fullmatch(r"```(?:json)?\s*(.*?)\s*```", cleaned, flags=re.DOTALL)
         if fence:
             cleaned = fence.group(1).strip()
