@@ -1,11 +1,11 @@
 from typing import Protocol
 
-from packages.sound.models import GeneratedSoundAsset, SoundCueSpec
+from packages.sound.models import RenderedSoundAsset, SoundCueSpec, SoundProviderHealth
 
 
 class SoundProvider(Protocol):
     name: str
 
-    async def health(self) -> dict[str, object]: ...
+    async def health(self) -> SoundProviderHealth: ...
 
-    async def generate(self, spec: SoundCueSpec) -> GeneratedSoundAsset: ...
+    async def generate(self, spec: SoundCueSpec) -> RenderedSoundAsset: ...
