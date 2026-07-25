@@ -125,9 +125,15 @@ class OpenAICompatibleLLMProvider:
             body = response.json()
 
         try:
-            content = body["choices"][0]["message"]["content"]
+            choice = body["choices"][0]
+            content = choice["message"]["content"]
+            finish_reason = choice.get("finish_reason")
         except (KeyError, IndexError, TypeError) as error:
             raise LLMResponseError("LLM response did not contain message content") from error
+        if finish_reason == "length":
+            raise LLMResponseError(
+                "LLM response was truncated because the max_tokens limit was reached"
+            )
         if not isinstance(content, str):
             raise LLMResponseError("LLM message content must be text")
         return self._parse_json(content)
