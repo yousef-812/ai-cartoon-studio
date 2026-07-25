@@ -63,6 +63,56 @@ class DirectorAgent(ProductionAgent):
         return repaired
 
     @staticmethod
+    def _reconcile_duration_totals(payload: dict[str, Any]) -> dict[str, Any]:
+        """Derive scene and episode totals from the generated shot durations.
+
+        Shot durations are the production source of truth. Local models often copy the
+        screenplay scene estimate into direction JSON instead of summing the directed
+        shots. This repair changes only derived totals; malformed or missing shot
+        durations remain untouched so normal schema validation still rejects them.
+        """
+
+        repaired = deepcopy(payload)
+        scenes = repaired.get("scenes")
+        if not isinstance(scenes, list) or not scenes:
+            return repaired
+
+        episode_total = 0.0
+        every_scene_reconciled = True
+        for scene in scenes:
+            if not isinstance(scene, dict):
+                every_scene_reconciled = False
+                continue
+            shots = scene.get("shots")
+            if not isinstance(shots, list) or not shots:
+                every_scene_reconciled = False
+                continue
+
+            durations: list[float] = []
+            for shot in shots:
+                if not isinstance(shot, dict):
+                    durations = []
+                    break
+                duration = shot.get("duration_seconds")
+                if isinstance(duration, bool) or not isinstance(duration, (int, float)):
+                    durations = []
+                    break
+                durations.append(float(duration))
+
+            if not durations:
+                every_scene_reconciled = False
+                continue
+
+            scene_total = round(sum(durations), 3)
+            scene["estimated_duration_seconds"] = scene_total
+            episode_total += scene_total
+
+        if every_scene_reconciled:
+            repaired["total_estimated_duration_seconds"] = round(episode_total, 3)
+
+        return repaired
+
+    @staticmethod
     def _validate_plan(
         direction: EpisodeDirection,
         script: EpisodeScript,
@@ -144,6 +194,7 @@ class DirectorAgent(ProductionAgent):
                     max_tokens=12288,
                 )
                 payload = self._deduplicate_dialogue_assignments(payload)
+                payload = self._reconcile_duration_totals(payload)
                 direction = EpisodeDirection.model_validate(payload)
                 self._validate_plan(direction, script, characters, request)
                 return direction.model_dump(mode="json")
