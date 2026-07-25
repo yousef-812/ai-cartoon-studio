@@ -6,6 +6,7 @@ from packages.finalization.models import (
     FinalizationJobSpec,
     FinalizationJobStatus,
     FinalizationReviewRequest,
+    QCReport,
 )
 from packages.finalization.repository import FinalizationJobRepository
 from packages.sound.models import SoundMixJobStatus, SoundMixReviewStatus
@@ -37,7 +38,10 @@ class FinalizationJobService:
 
     def queue(self, job_id: str) -> FinalizationJobRead:
         job = self.get(job_id)
-        if job.status not in {FinalizationJobStatus.PLANNED, FinalizationJobStatus.FAILED}:
+        if job.status not in {
+            FinalizationJobStatus.PLANNED,
+            FinalizationJobStatus.FAILED,
+        }:
             raise ConflictError("Only planned or failed finalization jobs can be queued")
         for shot in job.spec.shots:
             source = self.sound_repository.get(shot.sound_job_id)
@@ -53,6 +57,17 @@ class FinalizationJobService:
         if queued is None:
             raise NotFoundError("Finalization job not found")
         return queued
+
+    def fail(
+        self,
+        job_id: str,
+        error: str,
+        report: QCReport | None = None,
+    ) -> FinalizationJobRead:
+        failed = self.repository.fail(job_id, error, report)
+        if failed is None:
+            raise NotFoundError("Finalization job not found")
+        return failed
 
     def review(
         self,
