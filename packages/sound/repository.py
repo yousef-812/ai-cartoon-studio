@@ -28,13 +28,12 @@ class SoundMixJobRepository(Protocol):
 
     def mark_running(self, job_id: str) -> SoundMixJobRead | None: ...
 
-    def set_generated_assets(
+    def complete(
         self,
         job_id: str,
         assets: list[GeneratedSoundAsset],
+        video: GeneratedVideo,
     ) -> SoundMixJobRead | None: ...
-
-    def complete(self, job_id: str, video: GeneratedVideo) -> SoundMixJobRead | None: ...
 
     def fail(self, job_id: str, error: str) -> SoundMixJobRead | None: ...
 
