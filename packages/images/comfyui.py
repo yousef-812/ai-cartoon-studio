@@ -1,9 +1,11 @@
 import asyncio
 import copy
 import json
+import mimetypes
+import uuid
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlencode
+from urllib.parse import unquote, urlencode, urlparse
 
 import httpx
 from pydantic import BaseModel, Field
@@ -19,6 +21,8 @@ from packages.images.models import (
     ImageProviderResult,
     ImageProviderSubmission,
 )
+
+MAX_REFERENCE_IMAGE_BYTES = 50 * 1024 * 1024
 
 
 class WorkflowBinding(BaseModel):
@@ -39,7 +43,12 @@ class ComfyUIWorkflowTemplate(BaseModel):
         except (OSError, ValueError) as error:
             raise ImageProviderUnavailableError(f"Could not load ComfyUI workflow: {error}") from error
 
-    def render(self, spec: ImageGenerationSpec) -> dict[str, Any]:
+    def render(
+        self,
+        spec: ImageGenerationSpec,
+        *,
+        reference_filenames: list[str] | None = None,
+    ) -> dict[str, Any]:
         workflow = copy.deepcopy(self.workflow)
         values: dict[str, object] = {
             "prompt": spec.prompt,
@@ -50,6 +59,21 @@ class ComfyUIWorkflowTemplate(BaseModel):
             "steps": spec.steps,
             "guidance_scale": spec.guidance_scale,
         }
+        references = reference_filenames or []
+        if references:
+            values["reference_image"] = references[0]
+            for index, filename in enumerate(references, start=1):
+                values[f"reference_image_{index}"] = filename
+            for key in self.bindings:
+                if not key.startswith("reference_image_") or key in values:
+                    continue
+                try:
+                    index = int(key.removeprefix("reference_image_"))
+                except ValueError:
+                    continue
+                if index >= 1:
+                    values[key] = references[min(index - 1, len(references) - 1)]
+
         for key, value in values.items():
             binding = self.bindings.get(key)
             if binding is None:
@@ -71,6 +95,7 @@ class ComfyUIImageProvider:
         *,
         base_url: str,
         workflow_path: str,
+        reference_workflow_path: str = "",
         client_id: str = "ai-cartoon-studio",
         timeout_seconds: float = 300,
         poll_interval_seconds: float = 2,
@@ -78,6 +103,7 @@ class ComfyUIImageProvider:
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.workflow_path = workflow_path
+        self.reference_workflow_path = reference_workflow_path
         self.client_id = client_id
         self.timeout_seconds = timeout_seconds
         self.poll_interval_seconds = poll_interval_seconds
@@ -95,10 +121,12 @@ class ComfyUIImageProvider:
                 response = await client.get(f"{self.base_url}/system_stats")
                 response.raise_for_status()
             ComfyUIWorkflowTemplate.from_file(self.workflow_path)
+            if self.reference_workflow_path:
+                ComfyUIWorkflowTemplate.from_file(self.reference_workflow_path)
             return ImageProviderHealth(
                 available=True,
                 provider=self.name,
-                detail="Self-hosted ComfyUI endpoint and workflow are ready.",
+                detail="Self-hosted ComfyUI endpoint and workflows are ready.",
             )
         except (httpx.HTTPError, ImageProviderUnavailableError) as error:
             return ImageProviderHealth(
@@ -110,8 +138,22 @@ class ComfyUIImageProvider:
     async def submit(self, spec: ImageGenerationSpec) -> ImageProviderSubmission:
         if not self.base_url:
             raise ImageProviderUnavailableError("IMAGE_BASE_URL is not configured")
-        template = ComfyUIWorkflowTemplate.from_file(self.workflow_path)
-        payload = {"prompt": template.render(spec), "client_id": self.client_id}
+
+        reference_filenames: list[str] = []
+        workflow_path = self.workflow_path
+        if spec.reference_urls:
+            if not self.reference_workflow_path:
+                raise ImageProviderUnavailableError(
+                    "IMAGE_REFERENCE_WORKFLOW_PATH is required for reference-guided generation"
+                )
+            workflow_path = self.reference_workflow_path
+            reference_filenames = await self._upload_reference_images(spec.reference_urls)
+
+        template = ComfyUIWorkflowTemplate.from_file(workflow_path)
+        payload = {
+            "prompt": template.render(spec, reference_filenames=reference_filenames),
+            "client_id": self.client_id,
+        }
         try:
             async with httpx.AsyncClient(
                 timeout=self.timeout_seconds,
@@ -128,6 +170,79 @@ class ComfyUIImageProvider:
         if not isinstance(prompt_id, str) or not prompt_id:
             raise ImageProviderResponseError("ComfyUI response did not contain prompt_id")
         return ImageProviderSubmission(provider_job_id=prompt_id)
+
+    async def _upload_reference_images(self, sources: list[str]) -> list[str]:
+        uploaded: list[str] = []
+        try:
+            async with httpx.AsyncClient(
+                timeout=self.timeout_seconds,
+                transport=self.transport,
+            ) as client:
+                for index, source in enumerate(sources, start=1):
+                    content, source_name, mime_type = await self._read_reference(
+                        client,
+                        source,
+                        index,
+                    )
+                    suffix = Path(source_name).suffix.lower()
+                    if suffix not in {".png", ".jpg", ".jpeg", ".webp"}:
+                        suffix = ".png"
+                    upload_name = f"reference-{index}-{uuid.uuid4().hex[:12]}{suffix}"
+                    response = await client.post(
+                        f"{self.base_url}/upload/image",
+                        data={"overwrite": "true", "type": "input"},
+                        files={"image": (upload_name, content, mime_type)},
+                    )
+                    response.raise_for_status()
+                    body = response.json()
+                    name = body.get("name") if isinstance(body, dict) else None
+                    if not isinstance(name, str) or not name:
+                        raise ImageProviderResponseError(
+                            "ComfyUI reference upload did not return an image name"
+                        )
+                    subfolder = body.get("subfolder", "")
+                    if isinstance(subfolder, str) and subfolder:
+                        name = f"{subfolder.strip('/')}/{name}"
+                    uploaded.append(name)
+        except ImageProviderResponseError:
+            raise
+        except (httpx.HTTPError, OSError, ValueError) as error:
+            raise ImageProviderResponseError(
+                f"Could not stage reference image for ComfyUI: {error}"
+            ) from error
+        return uploaded
+
+    async def _read_reference(
+        self,
+        client: httpx.AsyncClient,
+        source: str,
+        index: int,
+    ) -> tuple[bytes, str, str]:
+        parsed = urlparse(source)
+        if parsed.scheme in {"http", "https"}:
+            response = await client.get(source)
+            response.raise_for_status()
+            content = response.content
+            filename = Path(unquote(parsed.path)).name or f"reference-{index}.png"
+            mime_type = response.headers.get("content-type", "image/png").split(";", 1)[0]
+        elif parsed.scheme == "file":
+            path = Path(unquote(parsed.path)).expanduser()
+            content = path.read_bytes()
+            filename = path.name
+            mime_type = mimetypes.guess_type(path.name)[0] or "image/png"
+        elif not parsed.scheme:
+            path = Path(source).expanduser()
+            content = path.read_bytes()
+            filename = path.name
+            mime_type = mimetypes.guess_type(path.name)[0] or "image/png"
+        else:
+            raise ValueError(f"Unsupported reference image source: {source}")
+
+        if not content:
+            raise ValueError(f"Reference image {index} is empty")
+        if len(content) > MAX_REFERENCE_IMAGE_BYTES:
+            raise ValueError(f"Reference image {index} exceeds 50 MB")
+        return content, filename, mime_type
 
     async def result(self, provider_job_id: str) -> ImageProviderResult:
         if not self.base_url:
