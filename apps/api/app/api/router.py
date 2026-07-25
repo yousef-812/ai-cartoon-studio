@@ -6,6 +6,7 @@ from app.api.routes import (
     directions,
     health,
     images,
+    lipsync,
     llm,
     production,
     scripts,
@@ -27,4 +28,5 @@ api_router.include_router(directions.router, tags=["directions"])
 api_router.include_router(visuals.router, tags=["visuals"])
 api_router.include_router(animations.router, tags=["animations"])
 api_router.include_router(voices.router, tags=["voices"])
+api_router.include_router(lipsync.router, tags=["lip-sync"])
 api_router.include_router(production.router, prefix="/production", tags=["production"])
