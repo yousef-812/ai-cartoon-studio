@@ -1,23 +1,21 @@
 from packages.sound.models import (
-    SoundAsset,
-    SoundAssetType,
-    SoundCue,
+    GeneratedSoundAsset,
+    SoundCueKind,
+    SoundCueSpec,
     SoundMixJobRead,
+    SoundMixJobSpec,
     SoundMixJobStatus,
-    SoundMixPlanRequest,
-    SoundMixReviewRequest,
     SoundMixReviewStatus,
-    SoundMixSpec,
+    SoundPlanRequest,
 )
 
 __all__ = [
-    "SoundAsset",
-    "SoundAssetType",
-    "SoundCue",
+    "GeneratedSoundAsset",
+    "SoundCueKind",
+    "SoundCueSpec",
     "SoundMixJobRead",
+    "SoundMixJobSpec",
     "SoundMixJobStatus",
-    "SoundMixPlanRequest",
-    "SoundMixReviewRequest",
     "SoundMixReviewStatus",
-    "SoundMixSpec",
+    "SoundPlanRequest",
 ]
