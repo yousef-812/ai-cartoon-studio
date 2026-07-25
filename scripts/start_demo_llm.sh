@@ -6,6 +6,7 @@ MODEL="${LLM_MODEL:-Qwen/Qwen3-8B-GGUF:Q4_K_M}"
 PORT="${LLM_PORT:-8080}"
 CONTEXT="${LLM_CONTEXT_SIZE:-16384}"
 GPU_LAYERS="${LLM_GPU_LAYERS:-99}"
+API_KEY="${LLM_API_KEY:-demo-llm-token}"
 
 command -v "$LLAMA_SERVER_BIN" >/dev/null 2>&1 || {
   echo "llama-server was not found. Install llama.cpp first." >&2
@@ -18,4 +19,6 @@ exec "$LLAMA_SERVER_BIN" \
   --port "$PORT" \
   --ctx-size "$CONTEXT" \
   --n-gpu-layers "$GPU_LAYERS" \
+  --api-key "$API_KEY" \
+  --no-webui \
   --jinja
