@@ -42,7 +42,11 @@ class QCReport(BaseModel):
 
     @property
     def errors(self) -> list[QCCheck]:
-        return [check for check in self.checks if not check.passed and check.severity == QCSeverity.ERROR]
+        return [
+            check
+            for check in self.checks
+            if not check.passed and check.severity == QCSeverity.ERROR
+        ]
 
 
 class SubtitleCue(BaseModel):
@@ -97,12 +101,22 @@ class FinalizationPlanRequest(BaseModel):
     output_width: int = Field(default=1920, ge=640, le=3840)
     output_height: int = Field(default=1080, ge=360, le=2160)
     output_fps: int = Field(default=24, ge=12, le=60)
-    video_codec: str = Field(default="libx264", min_length=2, max_length=100)
-    audio_codec: str = Field(default="aac", min_length=2, max_length=100)
+    video_codec: str = Field(
+        default="libx264",
+        pattern=r"^(libx264|libx265|h264_nvenc)$",
+    )
+    audio_codec: str = Field(default="aac", pattern=r"^(aac|libopus)$")
     target_loudness_lufs: float = Field(default=-16.0, ge=-24, le=-5)
+    loudness_tolerance_lu: float = Field(default=2.0, ge=0.5, le=6)
     silence_threshold_db: float = Field(default=-45.0, ge=-80, le=-20)
     max_silence_seconds: float = Field(default=2.0, ge=0.2, le=15)
     max_peak_db: float = Field(default=-1.0, ge=-12, le=0)
+
+    @model_validator(mode="after")
+    def validate_subtitle_options(self) -> Self:
+        if self.burn_subtitles and not self.include_subtitles:
+            raise ValueError("Burned subtitles require subtitle generation")
+        return self
 
 
 class FinalizationJobSpec(BaseModel):
