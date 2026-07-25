@@ -1,8 +1,8 @@
 from packages.finalization.ffmpeg import build_concat_command, build_short_command
 from packages.finalization.models import (
-    FinalShotSpec,
     FinalizationJobSpec,
     FinalizationPlanRequest,
+    FinalShotSpec,
     QCReport,
     ShortCandidateSpec,
 )
