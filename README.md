@@ -13,7 +13,9 @@ This repository is intentionally structured around the final product direction. 
 5. Produce and approve character references, backgrounds, and shot keyframes.
 6. Convert approved keyframes into independent animated video clips.
 7. Generate and approve permanent character voice lines.
-8. Run lip sync, sound design, quality control, and final rendering.
+8. Run lip sync and dialogue placement.
+9. Generate ambience, effects, music, and approved shot mixes.
+10. Run quality control and final rendering.
 
 ## Repository layout
 
@@ -33,6 +35,8 @@ packages/
   visuals/          Visual asset manifests and review gates
   animations/       Animated shot planning and review
   voices/           Character voice line planning and review
+  sound/            Ambience, effects, music, sound jobs, and review gates
+  mixing/           FFmpeg dialogue ducking and loudness-normalized mixing
   artifacts/        Durable local artifact storage
   pipeline/         Episode workflow and shared production models
   contracts/        Cross-service schemas
@@ -58,14 +62,18 @@ docker compose up --build
 - Visual assets: `http://localhost:3000/visuals`
 - Animated shots: `http://localhost:3000/animations`
 - Character voices: `http://localhost:3000/voices`
+- Lip sync: `http://localhost:3000/lip-sync`
+- Sound design and music: `http://localhost:3000/sound-design`
 - API: `http://localhost:8000`
 - API health: `http://localhost:8000/api/v1/health`
 - Local LLM health: `http://localhost:8000/api/v1/llm/health`
 - Image worker health: `http://localhost:8000/api/v1/images/health`
 - Video worker health: `http://localhost:8000/api/v1/video/health`
 - Voice worker health: `http://localhost:8000/api/v1/voice/health`
+- Lip-sync worker health: `http://localhost:8000/api/v1/lip-sync/health`
+- Sound system health: `http://localhost:8000/api/v1/sound/health`
 
-Docker starts PostgreSQL, Redis, FastAPI, a Celery production worker, and the dashboard. Self-hosted LLM, image, video, and voice endpoints run separately on GPU workstations, Lightning AI, Colab, or compatible private hosts.
+Docker starts PostgreSQL, Redis, FastAPI, a Celery production worker, FFmpeg, and the dashboard. Self-hosted LLM, image, video, voice, lip-sync, and sound-generation endpoints run separately on GPU workstations, Lightning AI, Colab, or compatible private hosts.
 
 ## Design principles
 
@@ -102,8 +110,22 @@ POST   /api/v1/animation-jobs/{job_id}/review
 POST   /api/v1/script-jobs/{job_id}/voice-jobs/plan
 POST   /api/v1/voice-jobs/{job_id}/retry
 POST   /api/v1/voice-jobs/{job_id}/review
+
+POST   /api/v1/direction-jobs/{job_id}/lip-sync-jobs/plan
+POST   /api/v1/lip-sync-jobs/{job_id}/retry
+POST   /api/v1/lip-sync-jobs/{job_id}/review
+
+POST   /api/v1/direction-jobs/{job_id}/sound-jobs/plan
+POST   /api/v1/sound-jobs/{job_id}/retry
+POST   /api/v1/sound-jobs/{job_id}/review
 ```
 
 All generation jobs are persisted before they are sent to temporary GPU workers. A disconnected worker does not erase requests, attempts, generated files, errors, or review decisions.
+
+## Sound design and music
+
+The production pipeline includes permanent shot-level ambience, visible-action effects, and instrumental music generation. Music is automatically ducked during approved dialogue windows, all layers are mixed and loudness-normalized with FFmpeg, and every source asset plus final shot mix is retained under stable `/artifacts/...` URLs.
+
+Dashboard: `/sound-design`
 
 See [`docs/local-llm.md`](docs/local-llm.md), [`docs/visual-production.md`](docs/visual-production.md), [`docs/animation-production.md`](docs/animation-production.md), [`docs/voice-production.md`](docs/voice-production.md), and [`docs/roadmap.md`](docs/roadmap.md).
