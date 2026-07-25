@@ -93,22 +93,28 @@ class DirectorAgent(ProductionAgent):
         request = DirectionGenerationRequest.model_validate(context["request"])
         messages = build_direction_messages(series, characters, locations, script, request)
 
-        last_error: ValidationError | ValueError | None = None
+        last_error: LLMResponseError | ValidationError | ValueError | None = None
         for attempt in range(self.validation_retries + 1):
-            payload = await self.provider.generate_json(messages)
             try:
+                payload = await self.provider.generate_json(
+                    messages,
+                    temperature=0.2,
+                    max_tokens=12288,
+                )
                 direction = EpisodeDirection.model_validate(payload)
                 self._validate_plan(direction, script, characters, request)
                 return direction.model_dump(mode="json")
-            except (ValidationError, ValueError) as error:
+            except (LLMResponseError, ValidationError, ValueError) as error:
                 last_error = error
                 if attempt < self.validation_retries:
                     messages.append(
                         LLMMessage(
                             role="user",
                             content=(
-                                "The previous direction JSON failed validation. Return the complete "
-                                f"JSON again after correcting these errors: {error}"
+                                "The previous direction response was incomplete, invalid, or failed "
+                                "validation. Return the complete JSON again with concise shot fields, "
+                                "no redundant prose, and every requested constraint preserved. "
+                                f"Correct these errors: {error}"
                             ),
                         )
                     )
