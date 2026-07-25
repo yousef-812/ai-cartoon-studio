@@ -10,6 +10,7 @@ from app.worker import celery_app
 from packages.artifacts.local_store import LocalArtifactStore
 from packages.common.errors import NotFoundError
 from packages.images.errors import ImageProviderError, ImageProviderUnavailableError
+from packages.visuals.references import generation_with_approved_character_references
 
 
 @celery_app.task(bind=True, max_retries=2, name="visuals.generate")
@@ -22,8 +23,14 @@ def generate_visual_asset(self: Task, asset_id: str) -> dict[str, object]:
             raise NotFoundError("Visual asset not found")
         repository.mark_running(asset_id)
 
+        dependencies = [
+            repository.get_by_key(asset.direction_job_id, key)
+            for key in asset.spec.dependency_keys
+        ]
+        generation = generation_with_approved_character_references(asset, dependencies)
+
         provider = build_image_provider()
-        submission = asyncio.run(provider.submit(asset.spec.generation))
+        submission = asyncio.run(provider.submit(generation))
         repository.set_provider_job(asset_id, submission.provider_job_id)
         result = asyncio.run(provider.wait_for_result(submission.provider_job_id))
         store = LocalArtifactStore(
