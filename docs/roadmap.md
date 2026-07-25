@@ -55,25 +55,29 @@ This roadmap preserves one final direction: a complete AI cartoon production stu
 - Copy generated audio into durable project storage with MIME type, size, duration metadata, and SHA-256 checksum.
 - Review or retry one line independently without regenerating the screenplay or other production stages.
 
+### 7. Lip sync and dialogue placement foundation
+
+- Match approved dialogue lines to the directed shots that cover their screenplay orders.
+- Build a non-overlapping timeline with lead-in, exact voice duration, pauses, minimum gaps, and tail padding.
+- Support multiple speaking characters in one shot through a single multi-segment manifest.
+- Run a replaceable self-hosted MuseTalk, Wav2Lip, LatentSync, ComfyUI, or compatible HTTP wrapper.
+- Reject dialogue that exceeds shot duration instead of silently truncating or compressing it.
+- Store final lip-synced shots permanently with stable URLs, MIME type, byte size, duration, and SHA-256 checksum.
+- Review or retry lip sync independently without rebuilding animation or voice acting.
+
 ## Next production phases
 
-### 7. Advanced character consistency and animated-shot quality
+### 8. Advanced character consistency and animated-shot quality
 
 - Add pose sheets, LoRA/IP-Adapter reference workflows, and identity similarity checks.
 - Add automated flicker, face-drift, costume-drift, background-drift, and motion-quality checks.
 - Track model, checkpoint, LoRA, ControlNet, and commercial-use metadata for every visual asset.
 
-### 8. Lip sync and dialogue placement
-
-- Match approved dialogue lines to the shots that cover their screenplay orders.
-- Run replaceable self-hosted lip-sync workflows for speaking shots only.
-- Align audio duration, pauses, mouth movement, and animated clip timing.
-- Review or regenerate lip sync without rebuilding animation or voice acting.
-
 ### 9. Sound design and music
 
 - Generate or select licensed ambience, effects, and music.
-- Mix dialogue and music automatically with review controls.
+- Place effects on shot timelines and mix dialogue, ambience, effects, and music with review controls.
+- Preserve source and license metadata for every sound asset.
 
 ### 10. Quality control and final render
 
