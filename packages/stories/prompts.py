@@ -12,6 +12,7 @@ def build_story_messages(
     locations: list[LocationRead],
     request: StoryGenerationRequest,
 ) -> list[LLMMessage]:
+    example_scene_duration = max(5, round(request.target_duration_seconds / 3))
     schema = {
         "title": "string",
         "logline": "string",
@@ -23,12 +24,12 @@ def build_story_messages(
             {
                 "number": 1,
                 "title": "string",
-                "location": "existing or clearly introduced location",
-                "characters": ["character name"],
+                "location": "exact registered location name",
+                "characters": ["exact registered character name"],
                 "objective": "string",
                 "conflict": "string",
                 "outcome": "string",
-                "estimated_duration_seconds": 30,
+                "estimated_duration_seconds": example_scene_duration,
             }
         ],
         "ending": "string",
@@ -47,8 +48,11 @@ def build_story_messages(
             content=(
                 "You are the head story editor for an original animated series. "
                 "Protect character identity, world rules, continuity, age suitability, and the "
-                "requested language. Produce a genuinely different episode, not a template rewrite. "
-                "Return one valid JSON object only, with no markdown or commentary. "
+                "requested language. Use only exact registered character and location names. "
+                "Respect every episode constraint and keep the sum of scene durations close to "
+                f"the exact {request.target_duration_seconds}-second target. Produce a genuinely "
+                "different episode, not a template rewrite. Return one valid JSON object only, "
+                "with no markdown or commentary. "
                 f"The exact output shape is: {json.dumps(schema, ensure_ascii=False)}"
             ),
         ),
