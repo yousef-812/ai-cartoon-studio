@@ -19,7 +19,7 @@ class StoryReviewStatus(StrEnum):
 
 class StoryGenerationRequest(BaseModel):
     premise: str = Field(min_length=10, max_length=3000)
-    target_duration_seconds: int = Field(default=300, ge=60, le=3600)
+    target_duration_seconds: int = Field(default=300, ge=30, le=3600)
     tone: str = Field(default="adventurous and emotionally warm", min_length=3, max_length=300)
     episode_number: int | None = Field(default=None, ge=1)
     constraints: list[str] = Field(default_factory=list, max_length=50)
