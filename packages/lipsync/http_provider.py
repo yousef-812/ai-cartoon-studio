@@ -116,19 +116,31 @@ class SelfHostedLipSyncProvider:
                     response.raise_for_status()
             except (httpx.ConnectError, httpx.ReadTimeout, httpx.RemoteProtocolError) as error:
                 raise LipSyncProviderUnavailableError(str(error)) from error
+            except httpx.HTTPStatusError as error:
+                if error.response.status_code >= 500:
+                    raise LipSyncProviderUnavailableError(str(error)) from error
+                raise LipSyncProviderResponseError(str(error)) from error
             except httpx.HTTPError as error:
                 raise LipSyncProviderResponseError(str(error)) from error
 
             content_type = response.headers.get("content-type", "video/mp4").split(";", 1)[0]
-            if content_type not in {"video/mp4", "video/webm", "video/quicktime"}:
+            supported_types = {
+                "video/mp4",
+                "video/webm",
+                "video/quicktime",
+                "video/x-matroska",
+            }
+            if content_type not in supported_types:
                 raise LipSyncProviderResponseError(
                     f"Lip-sync endpoint returned unsupported content type: {content_type}"
                 )
             if not response.content:
                 raise LipSyncProviderResponseError("Lip-sync endpoint returned an empty video")
-            suffix = {"video/webm": ".webm", "video/quicktime": ".mov"}.get(
-                content_type, ".mp4"
-            )
+            suffix = {
+                "video/webm": ".webm",
+                "video/quicktime": ".mov",
+                "video/x-matroska": ".mkv",
+            }.get(content_type, ".mp4")
             return RenderedLipSyncVideo(
                 content=response.content,
                 filename=f"scene-{spec.scene_number}-shot-{spec.shot_number}-lip-sync{suffix}",
