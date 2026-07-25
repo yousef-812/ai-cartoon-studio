@@ -67,24 +67,29 @@ class DirectorAgent(ProductionAgent):
         payload: dict[str, Any],
         script: EpisodeScript,
     ) -> dict[str, Any]:
-        """Derive scene and local shot numbers from list order and the screenplay.
+        """Derive scene and local shot identifiers from generated list order.
 
-        Direction models sometimes number shots globally across the episode instead of
-        restarting from one inside each scene. Scene and shot numbers are identifiers,
-        not creative content. This repair preserves the generated scene/shot order and
-        content, changes no timing, and never adds or removes an item. A scene-count
-        mismatch or malformed item remains untouched enough for validation to reject it.
+        Direction models sometimes number shots globally or attach a shot to the wrong
+        scene identifier. These fields are identifiers rather than creative content, so
+        they are normalized without changing order, timing, dialogue, or visual content.
+        The repair also runs when scene counts differ; the independent plan validator
+        still rejects missing or extra scenes after the payload becomes structurally valid.
         """
 
         repaired = deepcopy(payload)
         scenes = repaired.get("scenes")
-        if not isinstance(scenes, list) or len(scenes) != len(script.scenes):
+        if not isinstance(scenes, list):
             return repaired
 
-        for generated_scene, script_scene in zip(scenes, script.scenes, strict=True):
+        for scene_index, generated_scene in enumerate(scenes, start=1):
             if not isinstance(generated_scene, dict):
                 continue
-            generated_scene["scene_number"] = script_scene.number
+
+            if scene_index <= len(script.scenes):
+                scene_number = script.scenes[scene_index - 1].number
+            else:
+                scene_number = scene_index
+            generated_scene["scene_number"] = scene_number
 
             shots = generated_scene.get("shots")
             if not isinstance(shots, list):
@@ -93,7 +98,7 @@ class DirectorAgent(ProductionAgent):
                 if not isinstance(shot, dict):
                     continue
                 shot["number"] = local_number
-                shot["scene_number"] = script_scene.number
+                shot["scene_number"] = scene_number
 
         return repaired
 
