@@ -15,7 +15,7 @@ This repository is intentionally structured around the final product direction. 
 7. Generate and approve permanent character voice lines.
 8. Run lip sync and dialogue placement.
 9. Generate ambience, effects, music, and approved shot mixes.
-10. Run quality control and final rendering.
+10. Run media quality control and render final delivery artifacts.
 
 ## Repository layout
 
@@ -37,6 +37,7 @@ packages/
   voices/           Character voice line planning and review
   sound/            Ambience, effects, music, sound jobs, and review gates
   mixing/           FFmpeg dialogue ducking and loudness-normalized mixing
+  finalization/     QC, subtitles, final render, thumbnails, and Shorts exports
   artifacts/        Durable local artifact storage
   pipeline/         Episode workflow and shared production models
   contracts/        Cross-service schemas
@@ -64,6 +65,7 @@ docker compose up --build
 - Character voices: `http://localhost:3000/voices`
 - Lip sync: `http://localhost:3000/lip-sync`
 - Sound design and music: `http://localhost:3000/sound-design`
+- Quality control and final exports: `http://localhost:3000/finalization`
 - API: `http://localhost:8000`
 - API health: `http://localhost:8000/api/v1/health`
 - Local LLM health: `http://localhost:8000/api/v1/llm/health`
@@ -72,8 +74,9 @@ docker compose up --build
 - Voice worker health: `http://localhost:8000/api/v1/voice/health`
 - Lip-sync worker health: `http://localhost:8000/api/v1/lip-sync/health`
 - Sound system health: `http://localhost:8000/api/v1/sound/health`
+- Final-render health: `http://localhost:8000/api/v1/finalization/health`
 
-Docker starts PostgreSQL, Redis, FastAPI, a Celery production worker, FFmpeg, and the dashboard. Self-hosted LLM, image, video, voice, lip-sync, and sound-generation endpoints run separately on GPU workstations, Lightning AI, Colab, or compatible private hosts.
+Docker starts PostgreSQL, Redis, FastAPI, a Celery production worker, FFmpeg, FFprobe, and the dashboard. Self-hosted LLM, image, video, voice, lip-sync, and sound-generation endpoints run separately on GPU workstations, Lightning AI, Colab, or compatible private hosts.
 
 ## Design principles
 
@@ -118,14 +121,19 @@ POST   /api/v1/lip-sync-jobs/{job_id}/review
 POST   /api/v1/direction-jobs/{job_id}/sound-jobs/plan
 POST   /api/v1/sound-jobs/{job_id}/retry
 POST   /api/v1/sound-jobs/{job_id}/review
+
+POST   /api/v1/direction-jobs/{job_id}/finalization-jobs/plan
+GET    /api/v1/series/{series_id}/finalization-jobs
+POST   /api/v1/finalization-jobs/{job_id}/retry
+POST   /api/v1/finalization-jobs/{job_id}/review
 ```
 
-All generation jobs are persisted before they are sent to temporary GPU workers. A disconnected worker does not erase requests, attempts, generated files, errors, or review decisions.
+All generation jobs are persisted before they are sent to temporary GPU or rendering workers. A disconnected worker does not erase requests, attempts, generated files, errors, quality reports, or review decisions.
 
-## Sound design and music
+## Final episode outputs
 
-The production pipeline includes permanent shot-level ambience, visible-action effects, and instrumental music generation. Music is automatically ducked during approved dialogue windows, all layers are mixed and loudness-normalized with FFmpeg, and every source asset plus final shot mix is retained under stable `/artifacts/...` URLs.
+Finalization requires one approved sound mix for every directed shot. It checks media presence, stream coverage, duration, excessive silence, peak level, and integrated loudness before and after assembly. Successful jobs create a permanent episode master, SRT and VTT subtitles, a JSON QC report, a thumbnail, and configurable vertical Shorts candidates under stable `/artifacts/...` URLs.
 
-Dashboard: `/sound-design`
+Dashboard: `/finalization`
 
-See [`docs/local-llm.md`](docs/local-llm.md), [`docs/visual-production.md`](docs/visual-production.md), [`docs/animation-production.md`](docs/animation-production.md), [`docs/voice-production.md`](docs/voice-production.md), and [`docs/roadmap.md`](docs/roadmap.md).
+See [`docs/local-llm.md`](docs/local-llm.md), [`docs/visual-production.md`](docs/visual-production.md), [`docs/animation-production.md`](docs/animation-production.md), [`docs/voice-production.md`](docs/voice-production.md), [`docs/finalization-production.md`](docs/finalization-production.md), and [`docs/roadmap.md`](docs/roadmap.md).
