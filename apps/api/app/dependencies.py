@@ -9,6 +9,7 @@ from app.llm_provider import build_llm_provider
 from app.repositories.animations import SQLAnimationJobRepository
 from app.repositories.characters import SQLCharacterRepository
 from app.repositories.directions import SQLDirectionJobRepository
+from app.repositories.finalization import SQLFinalizationJobRepository
 from app.repositories.lipsync import SQLLipSyncJobRepository
 from app.repositories.scripts import SQLScriptJobRepository
 from app.repositories.series import SQLSeriesRepository
@@ -22,6 +23,7 @@ from packages.animations.service import AnimationJobService
 from packages.audio.openai_compatible import OpenAICompatibleAudioProvider
 from packages.characters.service import CharacterService
 from packages.direction.service import DirectionJobService
+from packages.finalization.service import FinalizationJobService
 from packages.images.comfyui import ComfyUIImageProvider
 from packages.lipsync.http_provider import SelfHostedLipSyncProvider
 from packages.lipsync.service import LipSyncJobService
@@ -82,6 +84,15 @@ def get_sound_mix_job_service(session: Session = Depends(get_db)) -> SoundMixJob
         SQLSoundMixJobRepository(session),
         SQLAnimationJobRepository(session),
         SQLLipSyncJobRepository(session),
+    )
+
+
+def get_finalization_job_service(
+    session: Session = Depends(get_db),
+) -> FinalizationJobService:
+    return FinalizationJobService(
+        SQLFinalizationJobRepository(session),
+        SQLSoundMixJobRepository(session),
     )
 
 
