@@ -32,10 +32,13 @@ jobs:
       - run: bash -n ../../scripts/*.sh
       - run: pytest
       - name: Validate demo Compose configuration
-        working-directory: ../..
-        run: docker compose -f docker-compose.yml -f docker-compose.demo.yml config -q
+        working-directory: ${{ github.workspace }}
+        run: |
+          cp .env.demo.example .env
+          docker compose -f docker-compose.yml -f docker-compose.demo.yml config -q
       - name: Build the production API image
-        run: docker build -f Dockerfile ../..
+        working-directory: ${{ github.workspace }}
+        run: docker build -f apps/api/Dockerfile .
 
   web:
     runs-on: ubuntu-latest
