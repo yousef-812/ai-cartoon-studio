@@ -23,6 +23,7 @@ The source bible, character identities, location, story request, and model manif
 
 - Original series, characters, location, premise, continuity rules, visual prompts, and voice identities.
 - A seed script that creates the demo records and queues the Story Job.
+- A stage-advancement script that applies the exact screenplay and direction constraints.
 - Qwen llama.cpp launchers.
 - SDXL and SVD ComfyUI workflows.
 - ComfyUI setup and model-download script.
@@ -110,12 +111,31 @@ Seed the original demo source and queue the Story Job:
 python scripts/seed_first_real_episode.py
 ```
 
-Then use the dashboards in order:
+Open `/production`, review the Story Job, and approve it only when it contains the correct two characters, one workshop, four required story beats, and an approximately 40-second structure.
 
-1. `/production` — review and approve the story.
-2. Generate the screenplay, verify Arabic dialogue and timing, then approve it.
-3. Generate direction, verify exactly 10 shots at 3.5–4.0 seconds each, then approve it.
-4. Reject and regenerate any result that adds a third character, a second location, overlapping speakers, or long dialogue.
+Queue the constrained screenplay:
+
+```bash
+python scripts/advance_first_real_episode.py screenplay
+```
+
+Review and approve the screenplay. Every spoken sentence must be short, Modern Standard Arabic, non-overlapping, and suitable for one four-second shot.
+
+Queue the constrained direction plan:
+
+```bash
+python scripts/advance_first_real_episode.py direction
+```
+
+The Direction Agent now enforces these values in code, not only in the prompt:
+
+- exactly 10 shots;
+- 3.5–4.0 seconds per shot;
+- at most one dialogue line per shot;
+- every dialogue order assigned exactly once;
+- all screenplay scenes preserved.
+
+Review `/direction` and approve only after the enforced plan also looks visually practical. Reject any result that adds a third character, a second location, hidden speaking faces, complicated hand close-ups, or rapid camera motion.
 
 After direction is approved and permanently stored, Qwen can be stopped to release GPU memory.
 
