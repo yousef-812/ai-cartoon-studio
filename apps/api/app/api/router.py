@@ -11,6 +11,7 @@ from app.api.routes import (
     production,
     scripts,
     series,
+    sound,
     stories,
     visuals,
     voices,
@@ -24,6 +25,7 @@ api_router.include_router(series.router, prefix="/series", tags=["series"])
 api_router.include_router(characters.router, tags=["characters"])
 api_router.include_router(stories.router, tags=["stories"])
 api_router.include_router(scripts.router, tags=["scripts"])
+api_router.include_router(sound.router, tags=["sound"])
 api_router.include_router(directions.router, tags=["directions"])
 api_router.include_router(visuals.router, tags=["visuals"])
 api_router.include_router(animations.router, tags=["animations"])
