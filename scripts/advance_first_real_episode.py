@@ -89,7 +89,10 @@ def queue_direction(base_url: str, demo_series_id: str) -> dict[str, Any]:
         "screenplay",
     )
     payload = {
+        "min_shot_duration_seconds": 3.5,
         "max_shot_duration_seconds": 4.0,
+        "target_shot_count": 10,
+        "max_dialogue_lines_per_shot": 1,
         "directing_style": "cinematic stylized 3D animation, readable faces, minimal motion, free-GPU efficient",
         "constraints": [
             "Create exactly 10 shots across all scenes.",
