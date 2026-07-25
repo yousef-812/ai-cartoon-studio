@@ -28,6 +28,10 @@ def build_concat_command(
         f"pad={request.output_width}:{request.output_height}:(ow-iw)/2:(oh-ih)/2,"
         f"fps={request.output_fps}"
     )
+    audio_filter = (
+        f"loudnorm=I={request.target_loudness_lufs}:"
+        f"TP={request.max_peak_db}:LRA=11"
+    )
     return [
         ffmpeg_binary,
         "-y",
@@ -40,6 +44,8 @@ def build_concat_command(
         manifest_path,
         "-vf",
         video_filter,
+        "-af",
+        audio_filter,
         "-c:v",
         request.video_codec,
         "-pix_fmt",
@@ -64,7 +70,12 @@ def render_episode(
     ffmpeg_binary: str = "ffmpeg",
 ) -> None:
     subprocess.run(
-        build_concat_command(manifest_path, output_path, spec, ffmpeg_binary=ffmpeg_binary),
+        build_concat_command(
+            manifest_path,
+            output_path,
+            spec,
+            ffmpeg_binary=ffmpeg_binary,
+        ),
         check=True,
         capture_output=True,
         text=True,
