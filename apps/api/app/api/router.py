@@ -4,6 +4,7 @@ from app.api.routes import (
     animations,
     characters,
     directions,
+    finalization,
     health,
     images,
     lipsync,
@@ -25,10 +26,11 @@ api_router.include_router(series.router, prefix="/series", tags=["series"])
 api_router.include_router(characters.router, tags=["characters"])
 api_router.include_router(stories.router, tags=["stories"])
 api_router.include_router(scripts.router, tags=["scripts"])
-api_router.include_router(sound.router, tags=["sound"])
 api_router.include_router(directions.router, tags=["directions"])
 api_router.include_router(visuals.router, tags=["visuals"])
 api_router.include_router(animations.router, tags=["animations"])
 api_router.include_router(voices.router, tags=["voices"])
 api_router.include_router(lipsync.router, tags=["lip-sync"])
+api_router.include_router(sound.router, tags=["sound"])
+api_router.include_router(finalization.router, tags=["finalization"])
 api_router.include_router(production.router, prefix="/production", tags=["production"])
