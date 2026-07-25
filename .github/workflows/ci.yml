@@ -15,7 +15,7 @@ concurrency:
 jobs:
   api:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: apps/api
@@ -28,7 +28,14 @@ jobs:
           cache-dependency-path: apps/api/pyproject.toml
       - run: pip install -e ".[dev]"
       - run: ruff check . ../../packages ../../scripts ../../workers
+      - run: python -m compileall ../../scripts ../../workers
+      - run: bash -n ../../scripts/*.sh
       - run: pytest
+      - name: Validate demo Compose configuration
+        working-directory: ../..
+        run: docker compose -f docker-compose.yml -f docker-compose.demo.yml config -q
+      - name: Build the production API image
+        run: docker build -f Dockerfile ../..
 
   web:
     runs-on: ubuntu-latest
