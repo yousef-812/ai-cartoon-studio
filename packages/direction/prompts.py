@@ -14,20 +14,21 @@ def build_direction_messages(
     script: EpisodeScript,
     request: DirectionGenerationRequest,
 ) -> list[LLMMessage]:
+    first_scene_duration = script.scenes[0].estimated_duration_seconds if script.scenes else 10
     schema = {
         "title": "string",
         "aspect_ratio": "16:9",
-        "total_estimated_duration_seconds": 300,
+        "total_estimated_duration_seconds": script.total_estimated_duration_seconds,
         "scenes": [
             {
                 "scene_number": 1,
                 "title": "string",
-                "estimated_duration_seconds": 60,
+                "estimated_duration_seconds": first_scene_duration,
                 "shots": [
                     {
                         "number": 1,
                         "scene_number": 1,
-                        "duration_seconds": 6.0,
+                        "duration_seconds": request.max_shot_duration_seconds,
                         "shot_size": "wide/medium/close-up/etc",
                         "camera_angle": "string",
                         "camera_movement": "string",
@@ -65,9 +66,9 @@ def build_direction_messages(
                 "dialogue order, character identity, location, wardrobe, continuity rule, and total "
                 "timing. Use exact registered character names. Make shots visually readable, "
                 "emotionally motivated, and economical enough for AI animation. Every dialogue line "
-                "order must appear in an appropriate shot. Keep shot durations within the requested "
-                "maximum unless a justified continuous action needs longer. Return one valid JSON "
-                "object only, without markdown. "
+                "order must appear in an appropriate shot. Respect every direction constraint and do "
+                "not exceed the requested maximum shot duration. Return one valid JSON object only, "
+                "without markdown. "
                 f"The exact output shape is: {json.dumps(schema, ensure_ascii=False)}"
             ),
         ),
