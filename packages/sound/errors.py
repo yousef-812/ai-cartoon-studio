@@ -1,10 +1,18 @@
 class SoundProviderError(RuntimeError):
-    """Base error raised by sound generation providers."""
+    pass
 
 
 class SoundProviderUnavailableError(SoundProviderError):
-    """Raised when the configured sound provider cannot be reached."""
+    pass
 
 
 class SoundProviderResponseError(SoundProviderError):
-    """Raised when the sound provider returns an invalid response."""
+    pass
+
+
+class SoundMixError(RuntimeError):
+    pass
+
+
+class SoundMixUnavailableError(SoundMixError):
+    pass
