@@ -1,0 +1,74 @@
+{
+  "profile": "first-real-episode-free-gpu",
+  "strategy": "Run heavy GPU workers sequentially on one 16 GB-class free GPU session. Keep API, PostgreSQL, Redis, Celery, Piper TTS, procedural sound, FFmpeg, and storage on the main host.",
+  "models": [
+    {
+      "stage": "story-script-direction",
+      "name": "Qwen3-8B-GGUF Q4_K_M",
+      "source": "https://huggingface.co/Qwen/Qwen3-8B-GGUF",
+      "license": "Apache-2.0",
+      "runtime": "llama.cpp OpenAI-compatible server",
+      "notes": "Use non-thinking mode for schema-constrained production JSON. The Q4_K_M file is approximately 5 GB."
+    },
+    {
+      "stage": "images",
+      "name": "Stable Diffusion XL Base 1.0",
+      "source": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0",
+      "license": "CreativeML Open RAIL++-M",
+      "runtime": "ComfyUI",
+      "notes": "Generate reference sheets first, then keyframes. Use the approved character and workshop references for every downstream prompt."
+    },
+    {
+      "stage": "character-consistency",
+      "name": "IP-Adapter for SDXL",
+      "source": "https://github.com/tencent-ailab/IP-Adapter",
+      "license": "Apache-2.0",
+      "runtime": "ComfyUI IP-Adapter nodes",
+      "notes": "Condition keyframes on the approved character reference images."
+    },
+    {
+      "stage": "image-to-video",
+      "name": "Stable Video Diffusion 1.1 Image-to-Video XT",
+      "source": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt-1-1",
+      "license": "Stability AI Community License",
+      "runtime": "ComfyUI",
+      "notes": "Generate short clips from approved keyframes. Review the model license and accept the gated repository terms before downloading."
+    },
+    {
+      "stage": "voice",
+      "name": "Piper ar_JO-kareem-medium",
+      "source": "https://huggingface.co/rhasspy/piper-voices/tree/main/ar/ar_JO/kareem/medium",
+      "license": "Voice-specific MODEL_CARD plus Piper runtime license",
+      "runtime": "CPU OpenAI-compatible wrapper included in workers/piper_compat",
+      "notes": "Both demo characters use the same Arabic base voice with different speed and pitch processing."
+    },
+    {
+      "stage": "lip-sync",
+      "name": "MuseTalk",
+      "source": "https://github.com/TMElyralab/MuseTalk",
+      "license": "MIT code; project states trained models may be used commercially, subject to licenses of dependencies",
+      "runtime": "GPU HTTP wrapper",
+      "notes": "The demo uses stylized 3D human faces instead of flat drawings to improve face detection and mouth tracking."
+    },
+    {
+      "stage": "ambience-effects-music",
+      "name": "Procedural Demo Sound Provider",
+      "source": "workers/procedural_sound",
+      "license": "Project source license",
+      "runtime": "CPU FastAPI",
+      "notes": "Creates original WAV ambience, effects, and simple score without third-party audio assets. Replace it later with a higher-quality licensed model."
+    }
+  ],
+  "required_user_secrets": [
+    "HF_TOKEN for gated SDXL/SVD downloads after accepting their terms",
+    "private bearer tokens selected for LLM, TTS, lip-sync, and sound endpoints"
+  ],
+  "test_acceptance": [
+    "All provider health endpoints are green before their stage runs.",
+    "Every generated artifact is copied into permanent project storage.",
+    "Character clothing, face, workshop layout, and lantern design remain recognizable across all eight shots.",
+    "Every dialogue line has approved audio and a valid lip-sync segment.",
+    "Final QC passes video stream, audio stream, duration, peak, loudness, and subtitle bounds checks.",
+    "The final master, SRT, VTT, QC JSON, thumbnail, and at least one vertical short are produced."
+  ]
+}
