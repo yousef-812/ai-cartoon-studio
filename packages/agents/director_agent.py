@@ -28,11 +28,11 @@ class DirectorAgent(ProductionAgent):
         request: DirectionGenerationRequest,
     ) -> None:
         registered = {character.name for character in characters}
+        all_shots = [shot for scene in direction.scenes for shot in scene.shots]
         unknown_characters = sorted(
             {
                 name
-                for scene in direction.scenes
-                for shot in scene.shots
+                for shot in all_shots
                 for name in shot.characters
                 if name not in registered
             }
@@ -42,25 +42,47 @@ class DirectorAgent(ProductionAgent):
 
         if len(direction.scenes) != len(script.scenes):
             raise ValueError("The direction plan must preserve every screenplay scene")
+        if request.target_shot_count is not None and len(all_shots) != request.target_shot_count:
+            raise ValueError(
+                f"Direction must contain exactly {request.target_shot_count} shots; "
+                f"received {len(all_shots)}"
+            )
+        if any(
+            shot.duration_seconds < request.min_shot_duration_seconds for shot in all_shots
+        ):
+            raise ValueError(
+                f"A shot is shorter than the {request.min_shot_duration_seconds}s minimum duration"
+            )
+        if any(
+            shot.duration_seconds > request.max_shot_duration_seconds for shot in all_shots
+        ):
+            raise ValueError(
+                f"A shot exceeds the {request.max_shot_duration_seconds}s maximum duration"
+            )
+        if request.max_dialogue_lines_per_shot is not None and any(
+            len(shot.dialogue_line_orders) > request.max_dialogue_lines_per_shot
+            for shot in all_shots
+        ):
+            raise ValueError(
+                "A shot exceeds the requested maximum number of dialogue lines"
+            )
 
         for directed_scene, script_scene in zip(direction.scenes, script.scenes, strict=True):
             if directed_scene.scene_number != script_scene.number:
                 raise ValueError("Directed scene numbers must match screenplay scene numbers")
 
             valid_lines = {line.order for line in script_scene.dialogue}
-            covered_lines = {
+            covered_order_list = [
                 order for shot in directed_scene.shots for order in shot.dialogue_line_orders
-            }
+            ]
+            covered_lines = set(covered_order_list)
             if covered_lines != valid_lines:
                 raise ValueError(
-                    f"Scene {script_scene.number} shots must cover every dialogue line exactly by order"
+                    f"Scene {script_scene.number} shots must cover every dialogue line by order"
                 )
-            if any(
-                shot.duration_seconds > request.max_shot_duration_seconds
-                for shot in directed_scene.shots
-            ):
+            if len(covered_order_list) != len(covered_lines):
                 raise ValueError(
-                    f"A shot exceeds the {request.max_shot_duration_seconds}s maximum duration"
+                    f"Scene {script_scene.number} assigns a dialogue line to more than one shot"
                 )
 
     async def run(self, context: dict[str, Any]) -> dict[str, Any]:
