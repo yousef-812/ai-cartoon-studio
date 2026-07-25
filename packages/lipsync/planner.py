@@ -24,7 +24,7 @@ class LipSyncPlanner:
         request: LipSyncPlanRequest,
     ) -> list[LipSyncShotSpec]:
         animation_map = {
-            (job.spec.generation.scene_number, job.spec.generation.shot_number): job
+            (job.spec.scene_number, job.spec.shot_number): job
             for job in animations
         }
         voice_map = {
