@@ -19,6 +19,47 @@ class StoryAgent(ProductionAgent):
         self.provider = provider
         self.validation_retries = validation_retries
 
+    @staticmethod
+    def _validate_story(
+        story: EpisodeStory,
+        characters: list[CharacterRead],
+        locations: list[LocationRead],
+        request: StoryGenerationRequest,
+    ) -> None:
+        registered_characters = {character.name for character in characters}
+        unknown_characters = sorted(
+            {
+                name
+                for scene in story.scenes
+                for name in scene.characters
+                if name not in registered_characters
+            }
+        )
+        if unknown_characters:
+            raise ValueError(f"Unknown story characters: {', '.join(unknown_characters)}")
+
+        registered_locations = {location.name for location in locations}
+        if registered_locations:
+            unknown_locations = sorted(
+                {scene.location for scene in story.scenes if scene.location not in registered_locations}
+            )
+            if unknown_locations:
+                raise ValueError(
+                    f"Story uses unregistered locations: {', '.join(unknown_locations)}"
+                )
+
+        scene_numbers = [scene.number for scene in story.scenes]
+        if scene_numbers != list(range(1, len(scene_numbers) + 1)):
+            raise ValueError("Story scene numbers must start at 1 and remain sequential")
+
+        duration = sum(scene.estimated_duration_seconds for scene in story.scenes)
+        tolerance = max(10, round(request.target_duration_seconds * 0.2))
+        if abs(duration - request.target_duration_seconds) > tolerance:
+            raise ValueError(
+                f"Story scene durations total {duration}s but target is "
+                f"{request.target_duration_seconds}s"
+            )
+
     async def run(self, context: dict[str, Any]) -> dict[str, Any]:
         series = SeriesRead.model_validate(context["series"])
         characters = [CharacterRead.model_validate(item) for item in context.get("characters", [])]
@@ -26,20 +67,21 @@ class StoryAgent(ProductionAgent):
         request = StoryGenerationRequest.model_validate(context["request"])
         messages = build_story_messages(series, characters, locations, request)
 
-        last_error: ValidationError | None = None
+        last_error: ValidationError | ValueError | None = None
         for attempt in range(self.validation_retries + 1):
             payload = await self.provider.generate_json(messages)
             try:
                 story = EpisodeStory.model_validate(payload)
+                self._validate_story(story, characters, locations, request)
                 return story.model_dump(mode="json")
-            except ValidationError as error:
+            except (ValidationError, ValueError) as error:
                 last_error = error
                 if attempt < self.validation_retries:
                     messages.append(
                         LLMMessage(
                             role="user",
                             content=(
-                                "The previous JSON failed schema validation. Return the complete JSON "
+                                "The previous story JSON failed validation. Return the complete JSON "
                                 f"again after correcting these errors: {error}"
                             ),
                         )
