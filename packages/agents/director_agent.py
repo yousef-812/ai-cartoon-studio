@@ -7,6 +7,7 @@ from packages.agents.base import ProductionAgent
 from packages.characters.models import CharacterRead
 from packages.direction.models import DirectionGenerationRequest, EpisodeDirection
 from packages.direction.prompts import build_direction_messages
+from packages.direction.repair import reconcile_constrained_direction
 from packages.llm.errors import LLMResponseError
 from packages.llm.models import LLMMessage
 from packages.llm.provider import LLMProvider
@@ -232,6 +233,12 @@ class DirectorAgent(ProductionAgent):
                     messages,
                     temperature=0.2,
                     max_tokens=12288,
+                )
+                payload = reconcile_constrained_direction(
+                    payload,
+                    script,
+                    characters,
+                    request,
                 )
                 payload = self._deduplicate_dialogue_assignments(payload)
                 payload = self._normalize_scene_and_shot_numbering(payload, script)
