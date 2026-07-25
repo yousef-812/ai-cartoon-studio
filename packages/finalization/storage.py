@@ -5,7 +5,6 @@ from pathlib import Path
 
 from packages.finalization.models import FinalArtifact
 
-
 _MIME_TYPES = {
     ".mp4": "video/mp4",
     ".mov": "video/quicktime",
