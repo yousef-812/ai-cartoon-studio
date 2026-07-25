@@ -80,7 +80,10 @@ def render_finalization_job(self, job_id: str) -> None:
 
             srt_path = workdir / "episode.srt"
             vtt_path = workdir / "episode.vtt"
-            if job.spec.request.include_subtitles:
+            has_subtitles = bool(
+                job.spec.request.include_subtitles and job.spec.subtitles
+            )
+            if has_subtitles:
                 srt_path.write_text(
                     render_srt(job.spec.subtitles),
                     encoding="utf-8",
@@ -89,35 +92,9 @@ def render_finalization_job(self, job_id: str) -> None:
                     render_vtt(job.spec.subtitles),
                     encoding="utf-8",
                 )
-                artifacts.append(
-                    store.persist_file(
-                        str(srt_path),
-                        series_id=job.series_id,
-                        job_id=job.id,
-                        filename="episode.srt",
-                        kind="subtitle_srt",
-                        metadata={
-                            "language": job.spec.request.subtitle_language,
-                            "cue_count": len(job.spec.subtitles),
-                        },
-                    )
-                )
-                artifacts.append(
-                    store.persist_file(
-                        str(vtt_path),
-                        series_id=job.series_id,
-                        job_id=job.id,
-                        filename="episode.vtt",
-                        kind="subtitle_vtt",
-                        metadata={
-                            "language": job.spec.request.subtitle_language,
-                            "cue_count": len(job.spec.subtitles),
-                        },
-                    )
-                )
 
             master_path = clean_master
-            if job.spec.request.burn_subtitles and job.spec.subtitles:
+            if job.spec.request.burn_subtitles and has_subtitles:
                 subtitled_master = workdir / "episode-subtitled.mp4"
                 burn_subtitles(
                     str(clean_master),
@@ -148,8 +125,7 @@ def render_finalization_job(self, job_id: str) -> None:
                 )
                 return
 
-            artifacts.insert(
-                0,
+            artifacts.append(
                 store.persist_file(
                     str(master_path),
                     series_id=job.series_id,
@@ -159,14 +135,44 @@ def render_finalization_job(self, job_id: str) -> None:
                     duration_seconds=job.spec.total_duration_seconds,
                     metadata={
                         "title": job.spec.title,
-                        "subtitles_burned": job.spec.request.burn_subtitles,
+                        "subtitles_burned": (
+                            job.spec.request.burn_subtitles and has_subtitles
+                        ),
                         "width": job.spec.request.output_width,
                         "height": job.spec.request.output_height,
                         "fps": job.spec.request.output_fps,
                         "target_loudness_lufs": job.spec.request.target_loudness_lufs,
                     },
-                ),
+                )
             )
+
+            if has_subtitles:
+                artifacts.append(
+                    store.persist_file(
+                        str(srt_path),
+                        series_id=job.series_id,
+                        job_id=job.id,
+                        filename="episode.srt",
+                        kind="subtitle_srt",
+                        metadata={
+                            "language": job.spec.request.subtitle_language,
+                            "cue_count": len(job.spec.subtitles),
+                        },
+                    )
+                )
+                artifacts.append(
+                    store.persist_file(
+                        str(vtt_path),
+                        series_id=job.series_id,
+                        job_id=job.id,
+                        filename="episode.vtt",
+                        kind="subtitle_vtt",
+                        metadata={
+                            "language": job.spec.request.subtitle_language,
+                            "cue_count": len(job.spec.subtitles),
+                        },
+                    )
+                )
 
             report_path = workdir / "qc-report.json"
             report_path.write_text(
