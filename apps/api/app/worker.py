@@ -14,6 +14,7 @@ celery_app = Celery(
         "app.tasks.animation",
         "app.tasks.voice",
         "app.tasks.lipsync",
+        "app.tasks.sound",
     ],
 )
 celery_app.conf.update(
