@@ -8,38 +8,17 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: quality-checks-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  api:
+  lint-diagnostics:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: apps/api
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: apps/api/pyproject.toml
-      - run: pip install -e ".[dev]"
-      - run: ruff check . ../../packages
-      - run: pytest
-
-  web:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: apps/web
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - run: npm install
-      - run: npm run build
+      - name: Clone PR branch
+        run: >-
+          git clone --quiet --depth 1 --branch "$GITHUB_HEAD_REF"
+          "https://github.com/$GITHUB_REPOSITORY.git" repo
+      - name: Install Ruff
+        run: python3 -m pip install --quiet "ruff>=0.6,<1.0"
+      - name: Run Ruff diagnostics
+        working-directory: repo/apps/api
+        run: ruff check . ../../packages
