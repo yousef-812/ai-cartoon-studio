@@ -23,29 +23,29 @@ def build_script_messages(
         "language": "series primary language",
         "target_duration_seconds": target_duration,
         "total_estimated_duration_seconds": target_duration,
-        "cold_open": "string",
+        "cold_open": "short string",
         "scenes": [
             {
                 "number": 1,
-                "title": "string",
+                "title": "short string",
                 "slugline": "INT./EXT. LOCATION - TIME",
                 "location": "registered or story location",
                 "time_of_day": "string",
                 "characters": ["exact registered character name"],
-                "objective": "string",
-                "conflict": "string",
-                "start_state": "string",
-                "end_state": "string",
-                "action_lines": ["present-tense visible action"],
+                "objective": "one concise sentence",
+                "conflict": "one concise sentence",
+                "start_state": "one concise sentence",
+                "end_state": "one concise sentence",
+                "action_lines": ["one or two short present-tense visible actions"],
                 "dialogue": [
                     {
                         "order": 1,
                         "speaker": "exact registered character name",
-                        "text": "spoken line only",
+                        "text": "one short spoken sentence",
                         "emotion": "specific playable emotion",
-                        "delivery": "performance direction",
-                        "action_before": "optional visible action",
-                        "action_after": "optional visible action",
+                        "delivery": "short performance direction",
+                        "action_before": "optional short visible action",
+                        "action_after": "optional short visible action",
                         "pause_after_ms": 200,
                         "estimated_duration_seconds": 2.5,
                     }
@@ -53,9 +53,9 @@ def build_script_messages(
                 "estimated_duration_seconds": example_scene_duration,
             }
         ],
-        "closing_beat": "string",
-        "continuity_updates": ["string"],
-        "production_notes": ["string"],
+        "closing_beat": "short string",
+        "continuity_updates": ["short string"],
+        "production_notes": ["short string"],
     }
     context = {
         "series": series.model_dump(mode="json"),
@@ -73,8 +73,10 @@ def build_script_messages(
                 "or character identities. Dialogue must sound different for each character and use "
                 "only exact registered character names as speakers. Keep action visible and playable. "
                 "Do not add camera shots; directing is a later stage. Respect every request constraint, "
-                "the exact target duration, and requested language. Return one valid JSON object only, "
-                "without markdown. "
+                "the exact target duration, and requested language. For technical episodes of 60 seconds "
+                "or less, use exactly three scenes, one or two short action lines per scene, concise field "
+                "values, and only dialogue that fits the directed duration. Avoid explanations, repeated "
+                "notes, and long prose. Return one complete valid JSON object only, without markdown. "
                 f"The exact output shape is: {json.dumps(schema, ensure_ascii=False)}"
             ),
         ),
