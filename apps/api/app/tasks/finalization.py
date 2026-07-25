@@ -2,10 +2,10 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from app.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.repositories.finalization import SQLFinalizationJobRepository
+from app.worker import celery_app
 from packages.finalization.ffmpeg import (
     build_short_command,
     burn_subtitles,
