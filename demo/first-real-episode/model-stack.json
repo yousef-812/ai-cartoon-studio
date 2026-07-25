@@ -8,7 +8,7 @@
       "source": "https://huggingface.co/Qwen/Qwen3-8B-GGUF",
       "license": "Apache-2.0",
       "runtime": "llama.cpp OpenAI-compatible server",
-      "notes": "Use non-thinking mode for schema-constrained production JSON. The Q4_K_M file is approximately 5 GB."
+      "notes": "The Q4_K_M file is approximately 5 GB. The project JSON adapter removes optional Qwen reasoning tags before schema validation."
     },
     {
       "stage": "images",
@@ -16,15 +16,15 @@
       "source": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0",
       "license": "CreativeML Open RAIL++-M",
       "runtime": "ComfyUI",
-      "notes": "Generate reference sheets first, then keyframes. Use the approved character and workshop references for every downstream prompt."
+      "notes": "Generate and approve the two character references and master workshop background before producing keyframes."
     },
     {
-      "stage": "character-consistency",
+      "stage": "optional-character-consistency-upgrade",
       "name": "IP-Adapter for SDXL",
       "source": "https://github.com/tencent-ailab/IP-Adapter",
       "license": "Apache-2.0",
       "runtime": "ComfyUI IP-Adapter nodes",
-      "notes": "Condition keyframes on the approved character reference images."
+      "notes": "Not required by the first executable demo workflow. Add after the baseline run if prompt-only identity consistency is insufficient."
     },
     {
       "stage": "image-to-video",
@@ -32,7 +32,7 @@
       "source": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt-1-1",
       "license": "Stability AI Community License",
       "runtime": "ComfyUI",
-      "notes": "Generate short clips from approved keyframes. Review the model license and accept the gated repository terms before downloading."
+      "notes": "The demo workflow uses 1024x576, 6 fps, and 21-24 frames per 3.5-4 second shot. Accept the gated repository terms before downloading."
     },
     {
       "stage": "voice",
@@ -44,11 +44,11 @@
     },
     {
       "stage": "lip-sync",
-      "name": "MuseTalk",
+      "name": "MuseTalk 1.5",
       "source": "https://github.com/TMElyralab/MuseTalk",
       "license": "MIT code; project states trained models may be used commercially, subject to licenses of dependencies",
       "runtime": "GPU HTTP wrapper",
-      "notes": "The demo uses stylized 3D human faces instead of flat drawings to improve face detection and mouth tracking."
+      "notes": "The baseline requires exactly one speaker per shot and converts the generated video to MuseTalk's recommended 25 fps before inference."
     },
     {
       "stage": "ambience-effects-music",
@@ -66,8 +66,8 @@
   "test_acceptance": [
     "All provider health endpoints are green before their stage runs.",
     "Every generated artifact is copied into permanent project storage.",
-    "Character clothing, face, workshop layout, and lantern design remain recognizable across all eight shots.",
-    "Every dialogue line has approved audio and a valid lip-sync segment.",
+    "Character clothing, face, workshop layout, and lantern design remain recognizable across all ten shots.",
+    "Every dialogue line has approved audio and a valid single-speaker lip-sync segment.",
     "Final QC passes video stream, audio stream, duration, peak, loudness, and subtitle bounds checks.",
     "The final master, SRT, VTT, QC JSON, thumbnail, and at least one vertical short are produced."
   ]
