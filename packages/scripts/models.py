@@ -19,7 +19,7 @@ class ScriptReviewStatus(StrEnum):
 
 
 class ScriptGenerationRequest(BaseModel):
-    target_duration_seconds: int | None = Field(default=None, ge=60, le=3600)
+    target_duration_seconds: int | None = Field(default=None, ge=30, le=3600)
     dialogue_style: str = Field(
         default="natural, character-specific, and concise", min_length=3, max_length=500
     )
@@ -67,8 +67,8 @@ class ScriptScene(BaseModel):
 class EpisodeScript(BaseModel):
     title: str = Field(min_length=2, max_length=200)
     language: str = Field(min_length=2, max_length=40)
-    target_duration_seconds: int = Field(ge=60, le=3600)
-    total_estimated_duration_seconds: int = Field(ge=60, le=4200)
+    target_duration_seconds: int = Field(ge=30, le=3600)
+    total_estimated_duration_seconds: int = Field(ge=30, le=4200)
     cold_open: str = Field(min_length=10, max_length=1500)
     scenes: list[ScriptScene] = Field(min_length=3, max_length=60)
     closing_beat: str = Field(min_length=10, max_length=1500)
