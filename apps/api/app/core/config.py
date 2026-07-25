@@ -47,6 +47,14 @@ class Settings(BaseSettings):
     lip_sync_api_key: str = ""
     lip_sync_timeout_seconds: float = 1200
 
+    sound_provider: str = "local-sound-http"
+    sound_base_url: str = ""
+    sound_endpoint_path: str = "/v1/audio/generate"
+    sound_api_key: str = ""
+    sound_timeout_seconds: float = 600
+    sound_max_retries: int = 2
+    ffmpeg_binary: str = "ffmpeg"
+
     celery_task_always_eager: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
