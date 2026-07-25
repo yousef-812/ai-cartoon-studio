@@ -1,3 +1,4 @@
+import json
 import subprocess
 import tempfile
 from pathlib import Path
@@ -13,10 +14,20 @@ from packages.finalization.ffmpeg import (
     render_episode,
     write_concat_manifest,
 )
-from packages.finalization.models import QCReport, QCSeverity
+from packages.finalization.models import QCCheck, QCReport, QCSeverity
 from packages.finalization.qc import inspect_media
 from packages.finalization.storage import FinalArtifactStore
 from packages.finalization.subtitles import render_srt, render_vtt
+
+
+def _report(checks: list[QCCheck]) -> QCReport:
+    return QCReport(
+        passed=all(
+            check.passed or check.severity != QCSeverity.ERROR
+            for check in checks
+        ),
+        checks=checks,
+    )
 
 
 @celery_app.task(
@@ -42,19 +53,20 @@ def render_finalization_job(self, job_id: str) -> None:
                 silence_threshold_db=job.spec.request.silence_threshold_db,
                 max_silence_seconds=job.spec.request.max_silence_seconds,
                 max_peak_db=job.spec.request.max_peak_db,
+                target_loudness_lufs=job.spec.request.target_loudness_lufs,
+                loudness_tolerance_lu=job.spec.request.loudness_tolerance_lu,
             )
             for check in shot_checks:
                 check.scene_number = shot.scene_number
                 check.shot_number = shot.shot_number
             checks.extend(shot_checks)
-        report = QCReport(
-            passed=all(
-                check.passed or check.severity != QCSeverity.ERROR for check in checks
-            ),
-            checks=checks,
-        )
+        report = _report(checks)
         if not report.passed:
-            repository.fail(job_id, "Blocking quality-control checks failed", report)
+            repository.fail(
+                job_id,
+                "Blocking shot quality-control checks failed",
+                report,
+            )
             return
 
         store = FinalArtifactStore(settings.storage_path)
@@ -69,8 +81,14 @@ def render_finalization_job(self, job_id: str) -> None:
             srt_path = workdir / "episode.srt"
             vtt_path = workdir / "episode.vtt"
             if job.spec.request.include_subtitles:
-                srt_path.write_text(render_srt(job.spec.subtitles), encoding="utf-8")
-                vtt_path.write_text(render_vtt(job.spec.subtitles), encoding="utf-8")
+                srt_path.write_text(
+                    render_srt(job.spec.subtitles),
+                    encoding="utf-8",
+                )
+                vtt_path.write_text(
+                    render_vtt(job.spec.subtitles),
+                    encoding="utf-8",
+                )
                 artifacts.append(
                     store.persist_file(
                         str(srt_path),
@@ -78,7 +96,10 @@ def render_finalization_job(self, job_id: str) -> None:
                         job_id=job.id,
                         filename="episode.srt",
                         kind="subtitle_srt",
-                        metadata={"language": job.spec.request.subtitle_language},
+                        metadata={
+                            "language": job.spec.request.subtitle_language,
+                            "cue_count": len(job.spec.subtitles),
+                        },
                     )
                 )
                 artifacts.append(
@@ -88,7 +109,10 @@ def render_finalization_job(self, job_id: str) -> None:
                         job_id=job.id,
                         filename="episode.vtt",
                         kind="subtitle_vtt",
-                        metadata={"language": job.spec.request.subtitle_language},
+                        metadata={
+                            "language": job.spec.request.subtitle_language,
+                            "cue_count": len(job.spec.subtitles),
+                        },
                     )
                 )
 
@@ -101,6 +125,29 @@ def render_finalization_job(self, job_id: str) -> None:
                     str(subtitled_master),
                 )
                 master_path = subtitled_master
+
+            master_checks = inspect_media(
+                str(master_path),
+                expected_duration=job.spec.total_duration_seconds,
+                silence_threshold_db=job.spec.request.silence_threshold_db,
+                max_silence_seconds=job.spec.request.max_silence_seconds,
+                max_peak_db=job.spec.request.max_peak_db,
+                target_loudness_lufs=job.spec.request.target_loudness_lufs,
+                loudness_tolerance_lu=job.spec.request.loudness_tolerance_lu,
+            )
+            for check in master_checks:
+                check.code = f"final_master_{check.code}"
+                check.message = f"Final master: {check.message}"
+            checks.extend(master_checks)
+            report = _report(checks)
+            if not report.passed:
+                repository.fail(
+                    job_id,
+                    "Blocking final-master quality-control checks failed",
+                    report,
+                )
+                return
+
             artifacts.insert(
                 0,
                 store.persist_file(
@@ -113,8 +160,36 @@ def render_finalization_job(self, job_id: str) -> None:
                     metadata={
                         "title": job.spec.title,
                         "subtitles_burned": job.spec.request.burn_subtitles,
+                        "width": job.spec.request.output_width,
+                        "height": job.spec.request.output_height,
+                        "fps": job.spec.request.output_fps,
+                        "target_loudness_lufs": job.spec.request.target_loudness_lufs,
                     },
                 ),
+            )
+
+            report_path = workdir / "qc-report.json"
+            report_path.write_text(
+                json.dumps(
+                    report.model_dump(mode="json"),
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            artifacts.append(
+                store.persist_file(
+                    str(report_path),
+                    series_id=job.series_id,
+                    job_id=job.id,
+                    filename="qc-report.json",
+                    kind="qc_report",
+                    metadata={
+                        "passed": report.passed,
+                        "check_count": len(report.checks),
+                        "error_count": len(report.errors),
+                    },
+                )
             )
 
             if job.spec.request.generate_thumbnail:
@@ -158,6 +233,7 @@ def render_finalization_job(self, job_id: str) -> None:
                             "scene_number": candidate.scene_number,
                             "title": candidate.title,
                             "start_time_seconds": candidate.start_time_seconds,
+                            "vertical_resolution": "1080x1920",
                         },
                     )
                 )
