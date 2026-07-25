@@ -14,11 +14,15 @@ def build_script_messages(
     story: EpisodeStory,
     request: ScriptGenerationRequest,
 ) -> list[LLMMessage]:
+    target_duration = request.target_duration_seconds or sum(
+        scene.estimated_duration_seconds for scene in story.scenes
+    )
+    example_scene_duration = max(5, round(target_duration / max(1, len(story.scenes))))
     schema = {
         "title": "string",
         "language": "series primary language",
-        "target_duration_seconds": 300,
-        "total_estimated_duration_seconds": 300,
+        "target_duration_seconds": target_duration,
+        "total_estimated_duration_seconds": target_duration,
         "cold_open": "string",
         "scenes": [
             {
@@ -46,7 +50,7 @@ def build_script_messages(
                         "estimated_duration_seconds": 2.5,
                     }
                 ],
-                "estimated_duration_seconds": 30,
+                "estimated_duration_seconds": example_scene_duration,
             }
         ],
         "closing_beat": "string",
@@ -68,8 +72,9 @@ def build_script_messages(
                 "a production-ready screenplay without changing its core plot, ending, world rules, "
                 "or character identities. Dialogue must sound different for each character and use "
                 "only exact registered character names as speakers. Keep action visible and playable. "
-                "Do not add camera shots; directing is a later stage. Respect the target duration and "
-                "requested language. Return one valid JSON object only, without markdown. "
+                "Do not add camera shots; directing is a later stage. Respect every request constraint, "
+                "the exact target duration, and requested language. Return one valid JSON object only, "
+                "without markdown. "
                 f"The exact output shape is: {json.dumps(schema, ensure_ascii=False)}"
             ),
         ),
