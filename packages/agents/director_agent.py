@@ -63,6 +63,41 @@ class DirectorAgent(ProductionAgent):
         return repaired
 
     @staticmethod
+    def _normalize_scene_and_shot_numbering(
+        payload: dict[str, Any],
+        script: EpisodeScript,
+    ) -> dict[str, Any]:
+        """Derive scene and local shot numbers from list order and the screenplay.
+
+        Direction models sometimes number shots globally across the episode instead of
+        restarting from one inside each scene. Scene and shot numbers are identifiers,
+        not creative content. This repair preserves the generated scene/shot order and
+        content, changes no timing, and never adds or removes an item. A scene-count
+        mismatch or malformed item remains untouched enough for validation to reject it.
+        """
+
+        repaired = deepcopy(payload)
+        scenes = repaired.get("scenes")
+        if not isinstance(scenes, list) or len(scenes) != len(script.scenes):
+            return repaired
+
+        for generated_scene, script_scene in zip(scenes, script.scenes, strict=True):
+            if not isinstance(generated_scene, dict):
+                continue
+            generated_scene["scene_number"] = script_scene.number
+
+            shots = generated_scene.get("shots")
+            if not isinstance(shots, list):
+                continue
+            for local_number, shot in enumerate(shots, start=1):
+                if not isinstance(shot, dict):
+                    continue
+                shot["number"] = local_number
+                shot["scene_number"] = script_scene.number
+
+        return repaired
+
+    @staticmethod
     def _reconcile_duration_totals(payload: dict[str, Any]) -> dict[str, Any]:
         """Derive scene and episode totals from the generated shot durations.
 
@@ -194,6 +229,7 @@ class DirectorAgent(ProductionAgent):
                     max_tokens=12288,
                 )
                 payload = self._deduplicate_dialogue_assignments(payload)
+                payload = self._normalize_scene_and_shot_numbering(payload, script)
                 payload = self._reconcile_duration_totals(payload)
                 direction = EpisodeDirection.model_validate(payload)
                 self._validate_plan(direction, script, characters, request)
