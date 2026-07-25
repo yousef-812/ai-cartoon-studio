@@ -23,6 +23,11 @@ if [[ ! -d "$VHS_DIR/.git" ]]; then
 fi
 "$PYTHON_BIN" -m pip install -r "$VHS_DIR/requirements.txt"
 
+IPADAPTER_DIR="$COMFYUI_DIR/custom_nodes/comfyui-ipadapter"
+if [[ ! -d "$IPADAPTER_DIR/.git" ]]; then
+  git clone --depth 1 https://github.com/comfyorg/comfyui-ipadapter.git "$IPADAPTER_DIR"
+fi
+
 if [[ -z "${HF_TOKEN:-}" ]]; then
   echo "HF_TOKEN is required after accepting the SDXL and SVD repository terms." >&2
   exit 1
@@ -36,35 +41,48 @@ from pathlib import Path
 from huggingface_hub import hf_hub_download
 
 root = Path(os.environ["COMFYUI_DIR"]).resolve()
-checkpoints = root / "models" / "checkpoints"
-checkpoints.mkdir(parents=True, exist_ok=True)
 token = os.environ["HF_TOKEN"]
-models = [
+
+downloads = [
     (
         "stabilityai/stable-diffusion-xl-base-1.0",
         "sd_xl_base_1.0.safetensors",
+        root / "models" / "checkpoints" / "sd_xl_base_1.0.safetensors",
     ),
     (
         "stabilityai/stable-video-diffusion-img2vid-xt-1-1",
         "svd_xt_1_1.safetensors",
+        root / "models" / "checkpoints" / "svd_xt_1_1.safetensors",
+    ),
+    (
+        "h94/IP-Adapter",
+        "models/image_encoder/model.safetensors",
+        root
+        / "models"
+        / "clip_vision"
+        / "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors",
+    ),
+    (
+        "h94/IP-Adapter",
+        "sdxl_models/ip-adapter-plus_sdxl_vit-h.safetensors",
+        root / "models" / "ipadapter" / "ip-adapter-plus_sdxl_vit-h.safetensors",
     ),
 ]
-for repo_id, filename in models:
-    destination = checkpoints / filename
+
+for repo_id, source_filename, destination in downloads:
+    destination.parent.mkdir(parents=True, exist_ok=True)
     if destination.is_file() and destination.stat().st_size > 1_000_000:
         print(f"Using existing model: {destination}")
         continue
-    print(f"Downloading {repo_id}/{filename}")
+    print(f"Downloading {repo_id}/{source_filename}")
     downloaded = Path(
         hf_hub_download(
             repo_id=repo_id,
-            filename=filename,
+            filename=source_filename,
             token=token,
-            local_dir=checkpoints,
         )
     )
-    if downloaded.resolve() != destination.resolve():
-        downloaded.replace(destination)
+    destination.write_bytes(downloaded.read_bytes())
 PY
 
 echo "Starting ComfyUI on port $COMFYUI_PORT"
