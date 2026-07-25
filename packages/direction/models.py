@@ -59,7 +59,7 @@ class ShotPlan(BaseModel):
 class DirectedScene(BaseModel):
     scene_number: int = Field(ge=1)
     title: str = Field(min_length=2, max_length=200)
-    estimated_duration_seconds: float = Field(ge=5, le=900)
+    estimated_duration_seconds: float = Field(ge=0.5, le=900)
     shots: list[ShotPlan] = Field(min_length=1, max_length=200)
 
     @model_validator(mode="after")
