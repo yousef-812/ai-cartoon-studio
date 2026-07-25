@@ -1,0 +1,58 @@
+services:
+  piper-tts:
+    build:
+      context: .
+      dockerfile: workers/piper_compat/Dockerfile
+    environment:
+      PIPER_VOICE_NAME: ar_JO-kareem-medium
+      PIPER_DATA_DIR: /models
+      PIPER_API_KEY: ${VOICE_API_KEY:-change-this-private-token}
+    ports:
+      - "8001:8001"
+    volumes:
+      - piper_models:/models
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health', timeout=5)"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+  procedural-sound:
+    build:
+      context: .
+      dockerfile: workers/procedural_sound/Dockerfile
+    environment:
+      SOUND_API_KEY: ${SOUND_API_KEY:-change-this-private-token}
+      SOUND_SAMPLE_RATE: 48000
+    ports:
+      - "8002:8002"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health', timeout=5)"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    environment:
+      VOICE_BASE_URL: http://piper-tts:8001
+      VOICE_MODEL: piper-arabic
+      SOUND_BASE_URL: http://procedural-sound:8002
+    depends_on:
+      piper-tts:
+        condition: service_healthy
+      procedural-sound:
+        condition: service_healthy
+
+  worker:
+    environment:
+      VOICE_BASE_URL: http://piper-tts:8001
+      VOICE_MODEL: piper-arabic
+      SOUND_BASE_URL: http://procedural-sound:8002
+    depends_on:
+      piper-tts:
+        condition: service_healthy
+      procedural-sound:
+        condition: service_healthy
+
+volumes:
+  piper_models:
