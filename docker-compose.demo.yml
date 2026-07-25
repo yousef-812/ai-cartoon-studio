@@ -33,6 +33,8 @@ services:
       retries: 10
 
   api:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       VOICE_BASE_URL: http://piper-tts:8001
       VOICE_MODEL: piper-arabic
@@ -44,6 +46,8 @@ services:
         condition: service_healthy
 
   worker:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       VOICE_BASE_URL: http://piper-tts:8001
       VOICE_MODEL: piper-arabic
