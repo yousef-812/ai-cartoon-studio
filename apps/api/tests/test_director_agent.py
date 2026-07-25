@@ -1,9 +1,11 @@
 import asyncio
 from typing import Any
 
+import pytest
+
 from packages.agents.director_agent import DirectorAgent
 from packages.characters.models import CharacterRead, CharacterRole, VisualIdentity, VoiceProfile
-from packages.direction.models import DirectionGenerationRequest
+from packages.direction.models import DirectionGenerationRequest, EpisodeDirection
 from packages.llm.models import LLMHealth, LLMMessage
 from packages.scripts.models import EpisodeScript
 from packages.series.models import SeriesRead, SeriesRules, SeriesStatus, VisualStyle
@@ -124,9 +126,7 @@ def _script() -> EpisodeScript:
     )
 
 
-def test_director_agent_repairs_unknown_character_and_covers_dialogue() -> None:
-    provider = RepairingDirectorProvider()
-    agent = DirectorAgent(provider, validation_retries=1)
+def _series_and_character() -> tuple[SeriesRead, CharacterRead]:
     series = SeriesRead(
         name="Skykeepers",
         slug="skykeepers",
@@ -153,6 +153,13 @@ def test_director_agent_repairs_unknown_character_and_covers_dialogue() -> None:
         speaking_style="Fast, optimistic, and precise when focused.",
         voice_profile=VoiceProfile(),
     )
+    return series, character
+
+
+def test_director_agent_repairs_unknown_character_and_covers_dialogue() -> None:
+    provider = RepairingDirectorProvider()
+    agent = DirectorAgent(provider, validation_retries=1)
+    series, character = _series_and_character()
 
     result = asyncio.run(
         agent.run(
@@ -170,3 +177,22 @@ def test_director_agent_repairs_unknown_character_and_covers_dialogue() -> None:
     assert result["scenes"][0]["shots"][0]["characters"] == ["Mira"]
     assert result["scenes"][0]["shots"][1]["dialogue_line_orders"] == [1]
     assert "approved_screenplay" in provider.messages[1].content
+
+
+def test_director_agent_rejects_wrong_requested_shot_count() -> None:
+    provider = RepairingDirectorProvider()
+    provider.calls = 1
+    payload = asyncio.run(provider.generate_json([]))
+    direction = EpisodeDirection.model_validate(payload)
+    _, character = _series_and_character()
+
+    with pytest.raises(ValueError, match="exactly 10 shots"):
+        DirectorAgent._validate_plan(
+            direction,
+            _script(),
+            [character],
+            DirectionGenerationRequest(
+                max_shot_duration_seconds=30,
+                target_shot_count=10,
+            ),
+        )
