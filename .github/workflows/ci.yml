@@ -2,12 +2,14 @@ name: Quality Checks
 
 on:
   workflow_dispatch:
+  pull_request:
+    types: [ready_for_review]
 
 permissions:
   contents: read
 
 concurrency:
-  group: quality-checks-${{ github.ref }}
+  group: quality-checks-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
