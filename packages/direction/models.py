@@ -19,13 +19,22 @@ class DirectionReviewStatus(StrEnum):
 
 
 class DirectionGenerationRequest(BaseModel):
+    min_shot_duration_seconds: float = Field(default=0.5, ge=0.5, le=30.0)
     max_shot_duration_seconds: float = Field(default=8.0, ge=1.0, le=30.0)
+    target_shot_count: int | None = Field(default=None, ge=1, le=2000)
+    max_dialogue_lines_per_shot: int | None = Field(default=None, ge=0, le=30)
     directing_style: str = Field(
         default="cinematic, readable, emotionally motivated, and animation-efficient",
         min_length=3,
         max_length=500,
     )
     constraints: list[str] = Field(default_factory=list, max_length=50)
+
+    @model_validator(mode="after")
+    def validate_duration_range(self) -> Self:
+        if self.min_shot_duration_seconds > self.max_shot_duration_seconds:
+            raise ValueError("Minimum shot duration cannot exceed maximum shot duration")
+        return self
 
 
 class ShotPlan(BaseModel):
