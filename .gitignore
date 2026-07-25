@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+!.env.demo.example
 
 # Python
 __pycache__/
@@ -22,7 +23,8 @@ node_modules/
 out/
 coverage/
 
-# Runtime assets
+# Runtime assets and downloaded models
+.runtime/
 storage/*
 !storage/.gitkeep
 renders/*
