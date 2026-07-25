@@ -6,7 +6,6 @@ from pathlib import Path
 
 from packages.finalization.models import QCCheck, QCSeverity
 
-
 _SILENCE_RE = re.compile(r"silence_duration:\s*([0-9.]+)")
 _MAX_VOLUME_RE = re.compile(r"max_volume:\s*(-?[0-9.]+) dB")
 _INTEGRATED_LOUDNESS_RE = re.compile(r"\bI:\s*(-?(?:[0-9]+(?:\.[0-9]+)?|inf))\s+LUFS")
