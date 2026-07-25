@@ -17,7 +17,14 @@ def test_openai_compatible_provider_health_and_json_generation() -> None:
             200,
             json={
                 "choices": [
-                    {"message": {"content": '```json\n{"title": "A valid story"}\n```'}}
+                    {
+                        "message": {
+                            "content": (
+                                "<think>Check the requested schema before answering.</think>\n"
+                                '```json\n{"title": "A valid story"}\n```'
+                            )
+                        }
+                    }
                 ]
             },
         )
