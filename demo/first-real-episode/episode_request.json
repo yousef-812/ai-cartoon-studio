@@ -1,0 +1,21 @@
+{
+  "premise": "خلال عاصفة ليلية خفيفة يومض نور الورشة ثم ينطفئ. يحاول عمر ونادر إصلاح مصباح الطوارئ القديم قبل أن يحل الظلام الكامل. يكتشفان أن المشكلة ليست البطارية بل سلك صغير مفصول، وتنجح المحاولة الثانية عندما يتوقفان عن الاستعجال ويتعاونان.",
+  "target_duration_seconds": 60,
+  "tone": "مغامرة عائلية دافئة، توتر خفيف، كوميديا بسيطة، ونهاية مبهجة",
+  "episode_number": 1,
+  "constraints": [
+    "Write the story, screenplay, and dialogue in clear Modern Standard Arabic.",
+    "Use only Omar (عمر), Nader (نادر), and the approved main workshop location.",
+    "Target exactly 8 short shots across 3 or 4 scenes and approximately 60 seconds total.",
+    "Keep each shot between 4 and 9 seconds so it can be generated with short image-to-video workflows.",
+    "Use no more than two short spoken sentences in any shot.",
+    "Keep dialogue lip-sync friendly: simple words, no long monologues, no overlapping speech.",
+    "Avoid complicated hand close-ups; use medium shots, close facial reactions, and simple tool placement.",
+    "Required beat 1: storm light flickers and the emergency lamp fails.",
+    "Required beat 2: Omar initially suspects the battery while Nader notices a loose wire.",
+    "Required beat 3: the first rushed repair produces a harmless small spark and fails.",
+    "Required beat 4: they slow down, reconnect the wire together, and the lamp turns on.",
+    "End with the warm lamp lighting both faces while the storm remains visible outside.",
+    "Do not include dangerous electrical instructions or real brand names."
+  ]
+}
