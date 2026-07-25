@@ -1,0 +1,40 @@
+{
+  "name": "ورشة النور",
+  "slug": "workshop-of-light-demo",
+  "logline": "شابان مخترعان يحاولان إصلاح مصباح طوارئ قبل أن تغرق الورشة والحي في الظلام.",
+  "synopsis": "مسلسل مغامرات عائلي قصير يدور داخل ورشة صغيرة مليئة بالأدوات والاختراعات البسيطة. يعتمد على حل المشكلات والتعاون والمرح، مع قصص قابلة للإنتاج في عدد محدود من المواقع والشخصيات.",
+  "genre": "مغامرة عائلية كوميدية",
+  "target_audience": "العائلة والأطفال من 8 سنوات فأكثر",
+  "primary_language": "ar",
+  "status": "active",
+  "visual_style": {
+    "art_direction": "cinematic stylized 3D animation, original family-friendly character design, expressive human faces, soft rounded forms, clean readable silhouettes, detailed but production-efficient workshop props, no logos, no copyrighted characters",
+    "medium": "stylized 3d animation",
+    "palette": ["warm amber", "deep teal", "muted orange", "cream", "storm blue"],
+    "line_style": "clean soft-edged 3D forms with strong silhouettes",
+    "lighting": "warm practical workshop lights contrasted with cool storm light from the window",
+    "aspect_ratio": "16:9"
+  },
+  "rules": {
+    "world_rules": [
+      "All technology must look handmade from ordinary workshop parts.",
+      "No magic; every solution comes from observation, cooperation, and simple engineering.",
+      "Only Omar and Nader may appear in the first demo episode.",
+      "The complete episode stays inside the workshop location.",
+      "Keep hands and tool interactions simple enough for stable image-to-video generation."
+    ],
+    "prohibited_topics": [
+      "real brands",
+      "existing fictional characters",
+      "weapons",
+      "dangerous electrical instructions",
+      "photorealistic depictions of real people"
+    ],
+    "continuity_notes": [
+      "Omar always wears the teal work jacket and round glasses.",
+      "Nader always wears the orange hoodie and navy apron.",
+      "The emergency lamp is a small cream metal lantern with a teal handle.",
+      "The workbench layout and window position remain unchanged across shots."
+    ]
+  }
+}
