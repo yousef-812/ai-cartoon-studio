@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     image_provider: str = "local-comfyui"
     image_base_url: str = ""
     image_workflow_path: str = "../../workflows/comfyui/sdxl.json"
+    image_reference_workflow_path: str = "../../workflows/comfyui/sdxl_ipadapter.json"
     image_client_id: str = "ai-cartoon-studio"
     image_timeout_seconds: float = 600
     image_poll_interval_seconds: float = 2
