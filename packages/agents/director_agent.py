@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Any
 
 from pydantic import ValidationError
@@ -19,6 +20,47 @@ class DirectorAgent(ProductionAgent):
     def __init__(self, provider: LLMProvider, validation_retries: int = 1) -> None:
         self.provider = provider
         self.validation_retries = validation_retries
+
+    @staticmethod
+    def _deduplicate_dialogue_assignments(payload: dict[str, Any]) -> dict[str, Any]:
+        """Keep only the first shot assignment for each dialogue order in a scene.
+
+        Small local models sometimes repeat the same valid dialogue order on adjacent
+        shots even after a correction prompt. This repair is deterministic and safe:
+        it never invents a dialogue assignment, changes shot timing, or hides missing
+        or invalid orders. The normal plan validator still rejects those cases.
+        """
+
+        repaired = deepcopy(payload)
+        scenes = repaired.get("scenes")
+        if not isinstance(scenes, list):
+            return repaired
+
+        for scene in scenes:
+            if not isinstance(scene, dict):
+                continue
+            shots = scene.get("shots")
+            if not isinstance(shots, list):
+                continue
+
+            seen_orders: set[int] = set()
+            for shot in shots:
+                if not isinstance(shot, dict):
+                    continue
+                orders = shot.get("dialogue_line_orders")
+                if not isinstance(orders, list):
+                    continue
+
+                unique_orders: list[Any] = []
+                for order in orders:
+                    if isinstance(order, int):
+                        if order in seen_orders:
+                            continue
+                        seen_orders.add(order)
+                    unique_orders.append(order)
+                shot["dialogue_line_orders"] = unique_orders
+
+        return repaired
 
     @staticmethod
     def _validate_plan(
@@ -101,6 +143,7 @@ class DirectorAgent(ProductionAgent):
                     temperature=0.2,
                     max_tokens=12288,
                 )
+                payload = self._deduplicate_dialogue_assignments(payload)
                 direction = EpisodeDirection.model_validate(payload)
                 self._validate_plan(direction, script, characters, request)
                 return direction.model_dump(mode="json")
