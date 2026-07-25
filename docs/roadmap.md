@@ -65,22 +65,24 @@ This roadmap preserves one final direction: a complete AI cartoon production stu
 - Store final lip-synced shots permanently with stable URLs, MIME type, byte size, duration, and SHA-256 checksum.
 - Review or retry lip sync independently without rebuilding animation or voice acting.
 
-## Next production phases
-
 ### 8. Advanced character consistency and animated-shot quality
 
 - Add pose sheets, LoRA/IP-Adapter reference workflows, and identity similarity checks.
 - Add automated flicker, face-drift, costume-drift, background-drift, and motion-quality checks.
 - Track model, checkpoint, LoRA, ControlNet, and commercial-use metadata for every visual asset.
 
-### 9. Sound design and music
+### 9. Sound design and music — implemented
 
-- Generate or select licensed ambience, effects, and music.
-- Place effects on shot timelines and mix dialogue, ambience, effects, and music with review controls.
-- Preserve source and license metadata for every sound asset.
+- Select approved lip-synced video for speaking shots and approved animation for silent shots.
+- Generate permanent ambience, visible-action effects, and instrumental music through a replaceable self-hosted endpoint.
+- Build a deterministic cue timeline with gain, fades, looping, and shot metadata.
+- Duck music during dialogue windows and normalize the final mix to a target LUFS value with FFmpeg.
+- Store every source sound and mixed shot permanently with checksums and human review gates.
 
-### 10. Quality control and final render
+## Next production phase
 
-- Detect character drift, visual artifacts, continuity errors, silence, clipping, and timing issues.
-- Render the full episode, subtitles, thumbnail, and Shorts candidates.
+### 10. Quality control and final episode assembly
+
+- Validate silence, clipping, loudness, missing frames, continuity, and approved upstream coverage.
+- Concatenate approved shot mixes, create subtitles, credits, thumbnails, and delivery exports.
 - Require final human approval before manual publishing.
