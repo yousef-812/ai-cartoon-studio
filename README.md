@@ -39,10 +39,10 @@ packages/
   mixing/           FFmpeg dialogue ducking and loudness-normalized mixing
   finalization/     QC, subtitles, final render, thumbnails, and Shorts exports
   artifacts/        Durable local artifact storage
-  pipeline/         Episode workflow and shared production models
-  contracts/        Cross-service schemas
+workers/             Executable Piper, MuseTalk, and procedural-sound services
+demo/                Original first-real-episode source pack
 notebooks/           Colab GPU worker notebook
-scripts/             Local and Lightning AI launch scripts
+scripts/             Local, GPU, validation, and demo launch scripts
 workflows/           Configurable ComfyUI workflows
 infrastructure/      Database and deployment assets
 docs/                Architecture and production guides
@@ -77,6 +77,21 @@ docker compose up --build
 - Final-render health: `http://localhost:8000/api/v1/finalization/health`
 
 Docker starts PostgreSQL, Redis, FastAPI, a Celery production worker, FFmpeg, FFprobe, and the dashboard. Self-hosted LLM, image, video, voice, lip-sync, and sound-generation endpoints run separately on GPU workstations, Lightning AI, Colab, or compatible private hosts.
+
+## First real episode test
+
+The repository includes a complete original Arabic technical episode pack under `demo/first-real-episode/`:
+
+- original series bible, location, and two characters;
+- a constrained 40-second story request targeting ten short shots;
+- Qwen3 llama.cpp setup and launch scripts;
+- SDXL and free-GPU SVD ComfyUI workflows;
+- Piper Arabic TTS worker;
+- MuseTalk 1.5 HTTP wrapper;
+- original procedural ambience, effects, and music worker;
+- staged provider preflight checks and an idempotent seed script.
+
+Start with [`docs/first-real-episode-runbook.md`](docs/first-real-episode-runbook.md). It lists the exact order, GPU handoffs, approval gates, render settings, and acceptance criteria.
 
 ## Design principles
 
@@ -136,4 +151,4 @@ Finalization requires one approved sound mix for every directed shot. It checks 
 
 Dashboard: `/finalization`
 
-See [`docs/local-llm.md`](docs/local-llm.md), [`docs/visual-production.md`](docs/visual-production.md), [`docs/animation-production.md`](docs/animation-production.md), [`docs/voice-production.md`](docs/voice-production.md), [`docs/finalization-production.md`](docs/finalization-production.md), and [`docs/roadmap.md`](docs/roadmap.md).
+See [`docs/local-llm.md`](docs/local-llm.md), [`docs/visual-production.md`](docs/visual-production.md), [`docs/animation-production.md`](docs/animation-production.md), [`docs/voice-production.md`](docs/voice-production.md), [`docs/finalization-production.md`](docs/finalization-production.md), [`docs/first-real-episode-runbook.md`](docs/first-real-episode-runbook.md), and [`docs/roadmap.md`](docs/roadmap.md).
