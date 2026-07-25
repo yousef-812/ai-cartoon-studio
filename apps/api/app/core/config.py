@@ -41,6 +41,12 @@ class Settings(BaseSettings):
     voice_timeout_seconds: float = 300
     voice_max_retries: int = 2
 
+    lip_sync_provider: str = "local-lip-sync-http"
+    lip_sync_base_url: str = ""
+    lip_sync_endpoint_path: str = "/v1/lip-sync"
+    lip_sync_api_key: str = ""
+    lip_sync_timeout_seconds: float = 1200
+
     celery_task_always_eager: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
