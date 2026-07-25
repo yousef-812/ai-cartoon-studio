@@ -79,6 +79,10 @@ button.compact { padding: 8px 12px; width: max-content; }
 .audio-result audio { width: 100%; }
 .video-result small, .audio-result small { color: var(--accent); }
 .video-result code, .audio-result code { overflow-wrap: anywhere; color: var(--muted); font-size: 11px; }
+.timeline-list { display: grid; gap: 8px; }
+.timeline-line { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; padding: 10px 12px; background: #171611; border-left: 2px solid var(--accent); }
+.timeline-line small { justify-self: end; color: var(--accent); }
+.timeline-line p { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
 
 @media (max-width: 1000px) {
   .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
