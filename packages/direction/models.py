@@ -70,7 +70,7 @@ class DirectedScene(BaseModel):
 class EpisodeDirection(BaseModel):
     title: str = Field(min_length=2, max_length=200)
     aspect_ratio: str = Field(default="16:9", pattern=r"^\d{1,2}:\d{1,2}$")
-    total_estimated_duration_seconds: float = Field(ge=60, le=4200)
+    total_estimated_duration_seconds: float = Field(ge=30, le=4200)
     scenes: list[DirectedScene] = Field(min_length=3, max_length=60)
     global_visual_notes: list[str] = Field(default_factory=list, max_length=100)
     continuity_notes: list[str] = Field(default_factory=list, max_length=100)
