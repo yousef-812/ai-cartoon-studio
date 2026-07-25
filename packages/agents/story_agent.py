@@ -67,22 +67,27 @@ class StoryAgent(ProductionAgent):
         request = StoryGenerationRequest.model_validate(context["request"])
         messages = build_story_messages(series, characters, locations, request)
 
-        last_error: ValidationError | ValueError | None = None
+        last_error: LLMResponseError | ValidationError | ValueError | None = None
         for attempt in range(self.validation_retries + 1):
-            payload = await self.provider.generate_json(messages)
             try:
+                payload = await self.provider.generate_json(
+                    messages,
+                    temperature=0.35,
+                    max_tokens=4096,
+                )
                 story = EpisodeStory.model_validate(payload)
                 self._validate_story(story, characters, locations, request)
                 return story.model_dump(mode="json")
-            except (ValidationError, ValueError) as error:
+            except (LLMResponseError, ValidationError, ValueError) as error:
                 last_error = error
                 if attempt < self.validation_retries:
                     messages.append(
                         LLMMessage(
                             role="user",
                             content=(
-                                "The previous story JSON failed validation. Return the complete JSON "
-                                f"again after correcting these errors: {error}"
+                                "The previous story response was incomplete, invalid, or failed "
+                                "validation. Return one complete concise JSON object again and correct "
+                                f"these errors: {error}"
                             ),
                         )
                     )
