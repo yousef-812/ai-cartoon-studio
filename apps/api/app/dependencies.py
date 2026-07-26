@@ -33,7 +33,7 @@ from packages.series.service import SeriesService
 from packages.sound.http_provider import SelfHostedSoundProvider
 from packages.sound.service import SoundMixJobService
 from packages.stories.service import StoryJobService
-from packages.videos.comfyui import ComfyUIVideoProvider
+from packages.videos.provider import VideoProvider
 from packages.visuals.service import VisualAssetService
 from packages.voices.service import VoiceJobService
 
@@ -104,7 +104,7 @@ def get_image_provider() -> ComfyUIImageProvider:
     return build_image_provider()
 
 
-def get_video_provider() -> ComfyUIVideoProvider:
+def get_video_provider() -> VideoProvider:
     return build_video_provider()
 
 
