@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import subprocess
 import uuid
 from pathlib import Path
 from typing import BinaryIO
@@ -33,7 +34,7 @@ class LocalBlenderVideoProvider:
         self.runner_script = str(Path(runner_script).expanduser().resolve())
         self.jobs_path = Path(jobs_path).expanduser().resolve()
         self.timeout_seconds = timeout_seconds
-        self._processes: dict[str, asyncio.subprocess.Process] = {}
+        self._processes: dict[str, subprocess.Popen[bytes]] = {}
         self._logs: dict[str, BinaryIO] = {}
         self._specs: dict[str, VideoGenerationSpec] = {}
 
@@ -46,26 +47,27 @@ class LocalBlenderVideoProvider:
                 detail=f"Blender runner script does not exist: {runner}",
             )
         try:
-            process = await asyncio.create_subprocess_exec(
-                self.blender_binary,
-                "--version",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.STDOUT,
+            completed = await asyncio.to_thread(
+                subprocess.run,
+                [self.blender_binary, "--version"],
+                capture_output=True,
+                check=False,
+                timeout=30,
             )
-            stdout, _ = await asyncio.wait_for(process.communicate(), timeout=30)
-        except (FileNotFoundError, OSError, TimeoutError) as error:
+        except (FileNotFoundError, OSError, subprocess.TimeoutExpired) as error:
             return VideoProviderHealth(
                 available=False,
                 provider=self.name,
                 detail=str(error),
             )
-        if process.returncode != 0:
+        output = (completed.stdout or b"") + (completed.stderr or b"")
+        if completed.returncode != 0:
             return VideoProviderHealth(
                 available=False,
                 provider=self.name,
-                detail=stdout.decode("utf-8", errors="replace")[-2000:],
+                detail=output.decode("utf-8", errors="replace")[-2000:],
             )
-        first_line = stdout.decode("utf-8", errors="replace").splitlines()
+        first_line = output.decode("utf-8", errors="replace").splitlines()
         detail = first_line[0] if first_line else "Blender is ready."
         return VideoProviderHealth(available=True, provider=self.name, detail=detail)
 
@@ -108,10 +110,10 @@ class LocalBlenderVideoProvider:
             str(output_path),
         ]
         try:
-            process = await asyncio.create_subprocess_exec(
-                *command,
+            process = subprocess.Popen(
+                command,
                 stdout=log_file,
-                stderr=asyncio.subprocess.STDOUT,
+                stderr=subprocess.STDOUT,
                 env=os.environ.copy(),
             )
         except (FileNotFoundError, OSError) as error:
@@ -127,9 +129,10 @@ class LocalBlenderVideoProvider:
         process = self._processes.get(provider_job_id)
         if process is None:
             return self._result_from_disk(provider_job_id)
-        if process.returncode is None:
+        return_code = process.poll()
+        if return_code is None:
             return VideoProviderResult(completed=False, detail="Blender render is still running.")
-        return self._completed_result(provider_job_id, process.returncode)
+        return self._completed_result(provider_job_id, return_code)
 
     async def wait_for_result(self, provider_job_id: str) -> VideoProviderResult:
         process = self._processes.get(provider_job_id)
@@ -139,10 +142,10 @@ class LocalBlenderVideoProvider:
                 return result
             raise VideoProviderResponseError("Unknown Blender provider job")
         try:
-            return_code = await asyncio.wait_for(process.wait(), timeout=self.timeout_seconds)
-        except TimeoutError as error:
+            return_code = await asyncio.to_thread(process.wait, self.timeout_seconds)
+        except subprocess.TimeoutExpired as error:
             process.kill()
-            await process.wait()
+            await asyncio.to_thread(process.wait, 30)
             self._close_log(provider_job_id)
             raise VideoProviderUnavailableError("Timed out waiting for Blender render") from error
         return self._completed_result(provider_job_id, return_code)
