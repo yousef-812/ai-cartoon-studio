@@ -61,7 +61,26 @@ jobs:
           PY
       - run: python -m compileall ../../scripts ../../workers
       - run: bash -n ../../scripts/*.sh
-      - run: pytest
+      - name: Run pytest
+        id: pytest
+        run: |
+          set +e
+          pytest -q --tb=short > pytest-report.txt 2>&1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Upload pytest report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: apps/api/pytest-report.txt
+          if-no-files-found: error
+      - name: Fail on pytest findings
+        if: steps.pytest.outputs.status != '0'
+        run: |
+          cat pytest-report.txt
+          exit 1
       - name: Validate demo Compose configuration
         working-directory: ${{ github.workspace }}
         run: |
