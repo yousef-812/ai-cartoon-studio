@@ -2,7 +2,6 @@ import re
 
 from packages.blender.models import VisemeCue
 
-
 _VISEME_GROUPS: tuple[tuple[str, str], ...] = (
     ("M", "بمpbm"),
     ("F", "فfv"),
