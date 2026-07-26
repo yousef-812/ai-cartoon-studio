@@ -47,6 +47,16 @@ This roadmap preserves one final direction: a complete AI cartoon production stu
 - Copy generated clips into durable project storage with MIME type, size, and SHA-256 checksum.
 - Review or retry each failed shot independently without rebuilding upstream stages.
 
+### 5B. Reusable Blender scene foundation
+
+- Represent every permanent location as one reusable `.blend` scene instead of regenerating its background for every shot.
+- Register stable character rigs, mouth controls, blocking anchors, action clips, camera presets, and props.
+- Convert directed shots into deterministic Blender shot manifests.
+- Execute manifests in headless Blender and render MP4 outputs through the existing animation-job interface.
+- Support dialogue audio placement and time-based viseme animation inside the permanent scene.
+- Keep legacy image-to-video animation available only for special effects and non-character shots.
+- Include a procedural workshop, placeholder Omar and Nader rigs, reusable actions, and a two-character smoke shot so the full path can be validated before final 3D art is delivered.
+
 ### 6. Voice acting foundation
 
 - Store a permanent provider, voice ID, language, description, speed, and pitch for every speaking character.
@@ -84,15 +94,24 @@ This roadmap preserves one final direction: a complete AI cartoon production stu
 
 ## Next production improvements
 
-### 10. Advanced character consistency and animated-shot quality
+### 10. Final 3D character and environment assets
 
-- Add pose sheets, LoRA/IP-Adapter reference workflows, and identity similarity checks.
-- Add automated flicker, face-drift, costume-drift, background-drift, and motion-quality checks.
-- Track model, checkpoint, LoRA, ControlNet, and commercial-use metadata for every visual asset.
+- Replace procedural Omar and Nader placeholders with approved production meshes while preserving the rig registry contract.
+- Add final facial shape keys, eye controls, finger controls, cloth-safe actions, and prop-hand attachment points.
+- Replace the procedural workshop geometry with final production art while preserving anchors, cameras, props, and lighting names.
+- Add forced phoneme alignment for precise Arabic visemes and emotional facial animation.
+- Add body-motion retargeting from reusable motion libraries and optional motion-capture sources.
 
-### 11. Delivery and publishing operations
+### 11. Advanced character consistency and animated-shot quality
+
+- Retain pose sheets, LoRA, and IP-Adapter only for concept art, texture support, and exceptional non-rigged visuals.
+- Add automated rig, framing, clipping, eye-line, mouth-timing, and action-continuity checks.
+- Add automated flicker, face-drift, costume-drift, and background-drift checks for remaining generative-video shots.
+- Track model, checkpoint, LoRA, ControlNet, 3D asset, and commercial-use metadata for every production asset.
+
+### 12. Delivery and publishing operations
 
 - Add title, description, tags, chapter, and credits packages for each export.
-- Track music, sound, font, model, and dataset licensing evidence for release readiness.
+- Track music, sound, font, model, dataset, texture, motion, and 3D-asset licensing evidence for release readiness.
 - Add platform-specific export profiles without automatic publishing by default.
 - Maintain an immutable release manifest for every approved episode version.
