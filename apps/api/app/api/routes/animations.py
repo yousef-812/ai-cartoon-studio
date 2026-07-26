@@ -22,8 +22,8 @@ from packages.common.errors import ConflictError, NotFoundError
 from packages.direction.models import DirectionJobStatus, DirectionReviewStatus
 from packages.direction.service import DirectionJobService
 from packages.series.service import SeriesService
-from packages.videos.comfyui import ComfyUIVideoProvider
 from packages.videos.models import VideoProviderHealth
+from packages.videos.provider import VideoProvider
 from packages.visuals.service import VisualAssetService
 
 router = APIRouter()
@@ -47,7 +47,7 @@ def _enqueue(job: AnimationJobRead, service: AnimationJobService) -> AnimationJo
 
 @router.get("/video/health", response_model=VideoProviderHealth)
 def video_health(
-    provider: ComfyUIVideoProvider = Depends(get_video_provider),
+    provider: VideoProvider = Depends(get_video_provider),
 ) -> VideoProviderHealth:
     return asyncio.run(provider.health())
 
