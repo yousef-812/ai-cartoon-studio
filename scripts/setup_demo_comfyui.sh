@@ -36,6 +36,7 @@ fi
 export COMFYUI_DIR HF_TOKEN
 "$PYTHON_BIN" - <<'PY'
 import os
+import shutil
 from pathlib import Path
 
 from huggingface_hub import hf_hub_download
@@ -82,7 +83,10 @@ for repo_id, source_filename, destination in downloads:
             token=token,
         )
     )
-    destination.write_bytes(downloaded.read_bytes())
+    temporary = destination.with_suffix(destination.suffix + ".download")
+    shutil.copyfile(downloaded, temporary)
+    temporary.replace(destination)
+    print(f"Installed model: {destination} ({destination.stat().st_size} bytes)")
 PY
 
 echo "Starting ComfyUI on port $COMFYUI_PORT"
