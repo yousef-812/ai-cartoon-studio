@@ -50,17 +50,26 @@ class AnimationJobService:
         }:
             raise ConflictError("Only planned or failed animation jobs can be queued")
 
-        keyframe = self.visual_repository.get(job.keyframe_asset_id)
-        if keyframe is None:
-            raise NotFoundError("Animation keyframe asset not found")
-        if keyframe.status != VisualAssetStatus.SUCCEEDED:
-            raise ConflictError("Animation keyframe must finish successfully before animation")
-        if keyframe.review_status != VisualAssetReviewStatus.APPROVED:
-            raise ConflictError("Approve the shot keyframe before animation")
-        if not keyframe.images or not keyframe.images[0].storage_path:
-            raise ConflictError("Animation keyframe is not stored permanently")
-        if not Path(keyframe.images[0].storage_path).is_file():
-            raise ConflictError("Stored animation keyframe file is missing")
+        source_asset = self.visual_repository.get(job.keyframe_asset_id)
+        if source_asset is None:
+            raise NotFoundError("Animation source visual asset not found")
+        if source_asset.status != VisualAssetStatus.SUCCEEDED:
+            raise ConflictError("Animation source visual must finish successfully before animation")
+        if source_asset.review_status != VisualAssetReviewStatus.APPROVED:
+            raise ConflictError("Approve the animation source visual before animation")
+        if not source_asset.images or not source_asset.images[0].storage_path:
+            raise ConflictError("Animation source visual is not stored permanently")
+        if not Path(source_asset.images[0].storage_path).is_file():
+            raise ConflictError("Stored animation source visual file is missing")
+
+        engine = job.spec.generation.metadata.get("engine")
+        if engine == "blender":
+            scene_path = Path(job.spec.generation.input_scene_path).expanduser()
+            if not scene_path.is_file():
+                raise ConflictError(f"Blender scene file is missing: {scene_path}")
+            manifest = job.spec.generation.metadata.get("blender_manifest")
+            if not isinstance(manifest, dict):
+                raise ConflictError("Blender animation manifest is missing")
 
         queued = self.repository.mark_queued(job_id)
         if queued is None:
