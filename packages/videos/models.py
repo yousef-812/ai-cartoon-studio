@@ -11,6 +11,7 @@ class VideoProviderHealth(BaseModel):
 
 class VideoGenerationSpec(BaseModel):
     input_image_path: str = Field(min_length=1, max_length=2000)
+    input_scene_path: str = Field(default="", max_length=2000)
     prompt: str = Field(min_length=10, max_length=8000)
     negative_prompt: str = Field(default="", max_length=4000)
     width: int = Field(default=1280, ge=256, le=4096)
@@ -31,6 +32,9 @@ class VideoGenerationSpec(BaseModel):
     def validate_frame_budget(self) -> Self:
         if self.frame_count > 600:
             raise ValueError("A single animated shot cannot exceed 600 frames")
+        engine = self.metadata.get("engine")
+        if engine == "blender" and not self.input_scene_path:
+            raise ValueError("Blender video generation requires input_scene_path")
         return self
 
 
