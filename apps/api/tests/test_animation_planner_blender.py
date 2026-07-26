@@ -12,7 +12,6 @@ from packages.visuals.models import (
     VisualAssetType,
 )
 
-
 ROOT = Path(__file__).resolve().parents[3]
 REGISTRY_PATH = ROOT / "demo" / "first-real-episode" / "blender" / "scene_registry.json"
 
