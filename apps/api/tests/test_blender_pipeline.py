@@ -5,7 +5,6 @@ from packages.blender.planner import BlenderShotPlanner
 from packages.blender.visemes import build_viseme_cues
 from packages.direction.models import ShotPlan
 
-
 ROOT = Path(__file__).resolve().parents[3]
 BLENDER_DEMO = ROOT / "demo" / "first-real-episode" / "blender"
 
