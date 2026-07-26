@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     video_timeout_seconds: float = 1200
     video_poll_interval_seconds: float = 3
 
+    blender_binary: str = "blender"
+    blender_runner_script: str = "../../workers/blender/shot_executor.py"
+    blender_jobs_path: str = "./renders/blender-jobs"
+    blender_timeout_seconds: float = 1800
+
     voice_provider: str = "local-openai-compatible-tts"
     voice_base_url: str = ""
     voice_api_key: str = ""
