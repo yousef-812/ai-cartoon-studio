@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from packages.blender.models import BlenderSceneRegistry, BlenderShotManifest, PropCue
+from packages.blender.models import BlenderSceneRegistry, BlenderShotManifest
 from packages.blender.planner import BlenderShotPlanner
 from packages.direction.models import EpisodeDirection
 from packages.scripts.models import EpisodeScript, ScriptScene
@@ -40,7 +40,6 @@ def build_episode_manifests(
     render_engine: str = "BLENDER_EEVEE_NEXT",
     samples: int = 32,
     audio_root: Path | None = None,
-    visible_props: tuple[str, ...] = ("lantern",),
 ) -> list[BlenderShotManifest]:
     script_scenes = {scene.number: scene for scene in screenplay.scenes}
     direction_scene_numbers = {scene.scene_number for scene in direction.scenes}
@@ -48,11 +47,6 @@ def build_episode_manifests(
     if missing_scenes:
         raise ValueError(f"Screenplay is missing directed scenes: {missing_scenes}")
 
-    props = [
-        PropCue(name=name, object_name=registry.props[name], visible=True)
-        for name in visible_props
-        if name in registry.props
-    ]
     planner = BlenderShotPlanner(registry)
     manifests: list[BlenderShotManifest] = []
 
@@ -76,13 +70,6 @@ def build_episode_manifests(
                 "scene_title": directed_scene.title,
                 "source": "approved direction and screenplay",
             }
-            manifests.append(
-                manifest.model_copy(
-                    update={
-                        "props": [prop.model_copy(deep=True) for prop in props],
-                        "metadata": metadata,
-                    }
-                )
-            )
+            manifests.append(manifest.model_copy(update={"metadata": metadata}))
 
     return manifests
