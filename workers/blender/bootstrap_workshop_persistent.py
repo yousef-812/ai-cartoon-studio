@@ -1,4 +1,16 @@
-from workers.blender import bootstrap_workshop
+import importlib.util
+import sys
+from pathlib import Path
+
+MODULE_PATH = Path(__file__).with_name("bootstrap_workshop.py")
+MODULE_SPEC = importlib.util.spec_from_file_location("bootstrap_workshop", MODULE_PATH)
+
+if MODULE_SPEC is None or MODULE_SPEC.loader is None:
+    raise RuntimeError(f"Unable to load Blender bootstrap module: {MODULE_PATH}")
+
+bootstrap_workshop = importlib.util.module_from_spec(MODULE_SPEC)
+sys.modules[MODULE_SPEC.name] = bootstrap_workshop
+MODULE_SPEC.loader.exec_module(bootstrap_workshop)
 
 
 def _create_persistent_action(name, rig, action_name, keys):
