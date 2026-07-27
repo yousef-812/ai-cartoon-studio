@@ -35,10 +35,7 @@ def test_approved_direction_builds_scene_scoped_blender_manifests() -> None:
     assert first_scene_dialogue.text == "انطفأ الضوء!"
     assert second_scene_dialogue.text == "البطارية سليمة."
 
-    assert all(
-        any(prop.name == "lantern" and prop.visible for prop in manifest.props)
-        for manifest in manifests
-    )
+    assert all(not manifest.props for manifest in manifests)
 
 
 def test_batch_uses_existing_scene_line_audio_files(tmp_path: Path) -> None:
