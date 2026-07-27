@@ -28,6 +28,15 @@ def test_demo_blender_registry_and_smoke_shot_are_valid() -> None:
     assert shot.characters[0].dialogue.visemes[-1].name == "REST"
 
 
+def test_blender_executor_keeps_string_emotion_as_metadata_only() -> None:
+    source = (ROOT / "workers" / "blender" / "shot_executor.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'rig["emotion"] = emotion' in source
+    assert 'keyframe_insert(data_path=\'["emotion"]\'' not in source
+
+
 def test_viseme_fallback_is_bounded_and_monotonic() -> None:
     cues = build_viseme_cues(
         "المشكلة مش في البطارية",
