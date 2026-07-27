@@ -40,7 +40,13 @@ class BlenderShotPlanner:
 
             action_key = self._action_key(shot, name, speaker_name)
             action_name = registered.actions.get(action_key) or registered.actions.get("idle", "")
-            look_at_object = self._look_at_object(shot.characters, name)
+            look_at_object = self._look_at_object(
+                shot.characters,
+                name,
+                speaker_name=speaker_name,
+                camera_object=camera_object,
+                camera_preset=camera_preset,
+            )
             dialogue_track = None
             if dialogue is not None and name == speaker_name:
                 text = str(dialogue.get("text", ""))
@@ -97,7 +103,11 @@ class BlenderShotPlanner:
             camera=CameraCue(
                 preset=camera_preset,
                 object_name=camera_object,
-                look_at_object=self._camera_target(shot.characters),
+                look_at_object=self._camera_target(
+                    shot.characters,
+                    speaker_name=speaker_name,
+                    camera_preset=camera_preset,
+                ),
                 movement=shot.camera_movement,
             ),
             characters=characters,
@@ -173,16 +183,36 @@ class BlenderShotPlanner:
                 return action
         return "idle"
 
-    def _look_at_object(self, names: list[str], current: str) -> str:
+    def _look_at_object(
+        self,
+        names: list[str],
+        current: str,
+        *,
+        speaker_name: str,
+        camera_object: str,
+        camera_preset: str,
+    ) -> str:
+        if current == speaker_name and camera_preset in {"medium", "close"}:
+            return camera_object
+        if speaker_name and current != speaker_name:
+            return self.registry.character(speaker_name).rig_object
         for name in names:
             if name == current:
                 continue
             return self.registry.character(name).rig_object
-        return ""
+        return camera_object if camera_preset == "close" else ""
 
-    def _camera_target(self, names: list[str]) -> str:
+    def _camera_target(
+        self,
+        names: list[str],
+        *,
+        speaker_name: str,
+        camera_preset: str,
+    ) -> str:
+        if speaker_name:
+            return self.registry.character(speaker_name).rig_object
         if not names:
             return ""
-        if len(names) == 1:
+        if len(names) == 1 or camera_preset == "close":
             return self.registry.character(names[0]).rig_object
         return "ANCHOR_Workbench_Center"
