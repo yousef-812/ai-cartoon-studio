@@ -1,6 +1,5 @@
 import bpy
 
-
 REQUIRED_OBJECTS = (
     "Omar_Rig",
     "Omar_Mouth",
