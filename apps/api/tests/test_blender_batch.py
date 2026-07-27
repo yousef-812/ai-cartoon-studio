@@ -1,3 +1,4 @@
+import wave
 from pathlib import Path
 
 from packages.blender.batch import build_episode_manifests
@@ -38,7 +39,7 @@ def test_approved_direction_builds_scene_scoped_blender_manifests() -> None:
     assert all(not manifest.props for manifest in manifests)
 
 
-def test_batch_uses_existing_scene_line_audio_files(tmp_path: Path) -> None:
+def test_batch_uses_actual_scene_line_audio_duration(tmp_path: Path) -> None:
     direction = EpisodeDirection.model_validate_json(
         (DEMO / "approved" / "direction.json").read_text(encoding="utf-8")
     )
@@ -49,7 +50,12 @@ def test_batch_uses_existing_scene_line_audio_files(tmp_path: Path) -> None:
         (DEMO / "blender" / "scene_registry.json").read_text(encoding="utf-8")
     )
     audio = tmp_path / "scene_01_line_01.wav"
-    audio.write_bytes(b"RIFF")
+    sample_rate = 8000
+    with wave.open(str(audio), "wb") as output:
+        output.setnchannels(1)
+        output.setsampwidth(2)
+        output.setframerate(sample_rate)
+        output.writeframes(b"\x00\x00" * sample_rate * 5)
 
     manifests = build_episode_manifests(
         direction,
@@ -61,3 +67,6 @@ def test_batch_uses_existing_scene_line_audio_files(tmp_path: Path) -> None:
     dialogue = manifests[0].characters[0].dialogue
     assert dialogue is not None
     assert dialogue.audio_path == str(audio.resolve())
+    assert dialogue.duration_seconds == 5.0
+    assert manifests[0].render.duration_seconds == 5.35
+    assert manifests[1].render.duration_seconds == 4.0
