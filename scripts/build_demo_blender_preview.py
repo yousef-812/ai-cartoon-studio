@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -55,6 +56,7 @@ def main() -> int:
         ValueError,
         TypeError,
         json.JSONDecodeError,
+        subprocess.CalledProcessError,
     ) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
