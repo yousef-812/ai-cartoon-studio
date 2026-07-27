@@ -252,6 +252,7 @@ def _keyframe_bone(rig, bone_name: str, frame: int, rotation: tuple[float, float
 
 def _create_action(name: str, rig, action_name: str, keys: list[tuple[int, str, tuple[float, float, float]]]):
     action = bpy.data.actions.new(f"{name}_{action_name}")
+    action.use_fake_user = True
     rig.animation_data_create()
     rig.animation_data.action = action
     for frame, bone_name, rotation in keys:
