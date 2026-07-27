@@ -9,7 +9,7 @@ mkdir -p "$(dirname "$OUTPUT_PATH")"
 "$BLENDER_BINARY" \
   --background \
   --factory-startup \
-  --python workers/blender/bootstrap_workshop.py \
+  --python workers/blender/bootstrap_workshop_persistent.py \
   -- \
   --output "$OUTPUT_PATH"
 
