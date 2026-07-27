@@ -18,4 +18,8 @@ if [[ ! -s "$OUTPUT_PATH" ]]; then
   exit 1
 fi
 
+"$BLENDER_BINARY" \
+  --background "$OUTPUT_PATH" \
+  --python workers/blender/validate_scene.py
+
 printf 'Workshop scene ready: %s (%s bytes)\n' "$OUTPUT_PATH" "$(stat -c%s "$OUTPUT_PATH")"
