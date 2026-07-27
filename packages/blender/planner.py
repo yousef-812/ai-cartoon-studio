@@ -9,6 +9,9 @@ from packages.blender.models import (
 from packages.blender.visemes import build_viseme_cues
 from packages.direction.models import ShotPlan
 
+_DIALOGUE_TAIL_SECONDS = 0.20
+_MAX_SHOT_DURATION_SECONDS = 60.0
+
 
 class BlenderShotPlanner:
     def __init__(self, registry: BlenderSceneRegistry) -> None:
@@ -30,6 +33,7 @@ class BlenderShotPlanner:
         dialogue_by_order = dialogue_by_order or {}
 
         speaker_name, dialogue = self._dialogue_for_shot(shot, dialogue_by_order)
+        render_duration = self._render_duration(shot.duration_seconds, dialogue)
         characters: list[BlenderCharacterCue] = []
         for index, name in enumerate(shot.characters):
             registered = self.registry.character(name)
@@ -54,12 +58,8 @@ class BlenderShotPlanner:
                 duration_seconds = float(
                     dialogue.get(
                         "duration_seconds",
-                        max(0.2, shot.duration_seconds - start_seconds - 0.15),
+                        max(0.2, shot.duration_seconds - start_seconds - _DIALOGUE_TAIL_SECONDS),
                     )
-                )
-                duration_seconds = min(
-                    duration_seconds,
-                    max(0.0, shot.duration_seconds - start_seconds),
                 )
                 dialogue_track = DialogueTrack(
                     speaker=name,
@@ -96,7 +96,7 @@ class BlenderShotPlanner:
                 width=width,
                 height=height,
                 fps=fps,
-                duration_seconds=shot.duration_seconds,
+                duration_seconds=render_duration,
                 engine=render_engine,
                 samples=samples,
             ),
@@ -118,8 +118,27 @@ class BlenderShotPlanner:
                 "visible_action": shot.action,
                 "transition": shot.transition,
                 "continuity_requirements": shot.continuity_requirements,
+                "direction_duration_seconds": shot.duration_seconds,
+                "render_duration_seconds": render_duration,
             },
         )
+
+    @staticmethod
+    def _render_duration(
+        direction_duration_seconds: float,
+        dialogue: dict[str, object] | None,
+    ) -> float:
+        duration = float(direction_duration_seconds)
+        if dialogue is not None:
+            start = float(dialogue.get("start_seconds", 0.15))
+            speech = float(dialogue.get("duration_seconds", 0.0))
+            duration = max(duration, start + speech + _DIALOGUE_TAIL_SECONDS)
+        if duration > _MAX_SHOT_DURATION_SECONDS:
+            raise ValueError(
+                f"Blender shot requires {duration:.3f}s, exceeding the "
+                f"{_MAX_SHOT_DURATION_SECONDS:.0f}s shot limit"
+            )
+        return duration
 
     @staticmethod
     def _camera_preset(shot_size: str) -> str:
