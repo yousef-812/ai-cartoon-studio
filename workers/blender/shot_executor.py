@@ -12,6 +12,7 @@ _CAMERA_FOCUS_HEIGHTS = {
     "medium": 1.55,
     "close": 1.90,
 }
+_CLOSE_CAMERA_SIDE_OFFSET = 0.55
 
 
 def _arguments() -> argparse.Namespace:
@@ -27,6 +28,30 @@ def _object(name: str, *, required: bool = True):
     if value is None and required:
         raise RuntimeError(f"Required Blender object is missing: {name}")
     return value
+
+
+def _descendants(obj):
+    for child in obj.children:
+        yield child
+        yield from _descendants(child)
+
+
+def _set_character_visibility(rig, visible: bool) -> None:
+    for obj in (rig, *_descendants(rig)):
+        obj.hide_render = not visible
+        obj.hide_viewport = not visible
+
+
+def _prepare_character_visibility(character_cues: list[dict[str, object]]) -> None:
+    active_rigs = {str(cue.get("rig_object", "")) for cue in character_cues}
+    scene_rigs = [
+        obj
+        for obj in bpy.data.objects
+        if obj.type == "ARMATURE" and obj.name.endswith("_Rig")
+    ]
+    for rig in scene_rigs:
+        _set_character_visibility(rig, rig.name in active_rigs)
+    print(f"VISIBLE_CHARACTERS={','.join(sorted(active_rigs))}")
 
 
 def _set_transform(obj, transform: dict[str, object]) -> None:
@@ -120,7 +145,10 @@ def _apply_visemes(
                 selected.value = weight
                 selected.keyframe_insert(data_path="value", frame=frame)
                 selected.value = 0.0
-                selected.keyframe_insert(data_path="value", frame=frame + max(1, round(fps * 0.08)))
+                selected.keyframe_insert(
+                    data_path="value",
+                    frame=frame + max(1, round(fps * 0.08)),
+                )
             continue
 
         mouth.scale.z = 0.25 if name == "REST" else 0.25 + (0.55 * weight)
@@ -156,6 +184,7 @@ def _configure_character(
 ) -> None:
     rig = _object(str(cue["rig_object"]))
     anchor = _object(str(cue["anchor_object"]))
+    _set_character_visibility(rig, True)
     _copy_anchor_transform(rig, anchor, dict(cue.get("transform_offset", {})))
     _assign_action(rig, str(cue.get("action_name", "")))
     _apply_emotion(rig, str(cue.get("emotion", "neutral")))
@@ -226,7 +255,8 @@ def _configure_camera(cue: dict[str, object], frame_start: int, frame_end: int) 
     if target is not None:
         focus = _camera_focus_point(target, preset)
         if preset == "close" and not isinstance(start_transform, dict):
-            camera.location.x = focus.x
+            inward_sign = -1.0 if focus.x >= 0 else 1.0
+            camera.location.x = focus.x + (inward_sign * _CLOSE_CAMERA_SIDE_OFFSET)
         direction = focus - camera.matrix_world.translation
         if direction.length >= 0.001:
             camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
@@ -279,10 +309,13 @@ def main() -> None:
     output_path = Path(args.output).expanduser().resolve()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
+    character_cues = [dict(cue) for cue in manifest.get("characters", [])]
+    _prepare_character_visibility(character_cues)
+
     fps, frame_start, frame_end = _configure_render(manifest, output_path)
-    for cue in manifest.get("characters", []):
+    for cue in character_cues:
         _configure_character(
-            dict(cue),
+            cue,
             fps=fps,
             frame_start=frame_start,
             frame_end=frame_end,
