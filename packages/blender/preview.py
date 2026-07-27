@@ -85,13 +85,20 @@ def build_preview_command(
         str(concat_path),
         "-map",
         "0:v:0",
+        "-map",
+        "0:a:0?",
         "-vf",
         video_filter,
-        "-an",
         "-c:v",
         "libx264",
         "-pix_fmt",
         "yuv420p",
+        "-c:a",
+        "aac",
+        "-ar",
+        "48000",
+        "-ac",
+        "2",
         "-movflags",
         "+faststart",
         str(output_path),
@@ -104,10 +111,8 @@ def probe_video(path: Path, *, ffprobe_binary: str = "ffprobe") -> dict[str, obj
             ffprobe_binary,
             "-v",
             "error",
-            "-select_streams",
-            "v:0",
             "-show_entries",
-            "stream=width,height,r_frame_rate:format=duration",
+            "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels:format=duration",
             "-of",
             "json",
             str(path),
@@ -118,19 +123,26 @@ def probe_video(path: Path, *, ffprobe_binary: str = "ffprobe") -> dict[str, obj
     )
     payload = json.loads(result.stdout)
     streams = payload.get("streams", [])
-    if not streams:
+    video_streams = [stream for stream in streams if stream.get("codec_type") == "video"]
+    audio_streams = [stream for stream in streams if stream.get("codec_type") == "audio"]
+    if not video_streams:
         raise RuntimeError(f"No video stream found in Blender output: {path}")
-    stream = streams[0]
+    stream = video_streams[0]
     rate = str(stream.get("r_frame_rate", "0/1"))
     numerator, _, denominator = rate.partition("/")
     fps = float(numerator) / max(float(denominator or 1), 1.0)
     duration = float(payload.get("format", {}).get("duration", 0.0))
+    audio = audio_streams[0] if audio_streams else {}
     return {
         "width": int(stream.get("width", 0)),
         "height": int(stream.get("height", 0)),
         "fps": fps,
         "duration_seconds": duration,
         "size_bytes": path.stat().st_size,
+        "has_audio": bool(audio_streams),
+        "audio_codec": str(audio.get("codec_name", "")),
+        "audio_sample_rate": int(audio.get("sample_rate", 0) or 0),
+        "audio_channels": int(audio.get("channels", 0) or 0),
     }
 
 
