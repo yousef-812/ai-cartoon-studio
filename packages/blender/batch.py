@@ -1,9 +1,21 @@
+import wave
 from pathlib import Path
 
 from packages.blender.models import BlenderSceneRegistry, BlenderShotManifest
 from packages.blender.planner import BlenderShotPlanner
 from packages.direction.models import EpisodeDirection
 from packages.scripts.models import EpisodeScript, ScriptScene
+
+
+def _wav_duration_seconds(path: Path) -> float:
+    try:
+        with wave.open(str(path), "rb") as audio:
+            frame_rate = audio.getframerate()
+            if frame_rate <= 0:
+                raise ValueError(f"WAV file has an invalid frame rate: {path}")
+            return audio.getnframes() / frame_rate
+    except (OSError, EOFError, wave.Error) as error:
+        raise ValueError(f"Cannot read generated dialogue WAV {path}: {error}") from error
 
 
 def _dialogue_by_order(
@@ -14,17 +26,20 @@ def _dialogue_by_order(
     dialogue: dict[int, dict[str, object]] = {}
     for line in scene.dialogue:
         audio_path = ""
+        duration_seconds = line.estimated_duration_seconds
         if audio_root is not None:
             candidate = audio_root / f"scene_{scene.number:02d}_line_{line.order:02d}.wav"
             if candidate.is_file():
                 audio_path = str(candidate.resolve())
+                duration_seconds = _wav_duration_seconds(candidate)
 
         dialogue[line.order] = {
             "speaker": line.speaker,
             "text": line.text,
             "audio_path": audio_path,
             "start_seconds": 0.15,
-            "duration_seconds": line.estimated_duration_seconds,
+            "duration_seconds": duration_seconds,
+            "estimated_duration_seconds": line.estimated_duration_seconds,
         }
     return dialogue
 
