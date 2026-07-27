@@ -7,6 +7,12 @@ from pathlib import Path
 import bpy
 from mathutils import Vector
 
+_CAMERA_FOCUS_HEIGHTS = {
+    "wide": 1.35,
+    "medium": 1.55,
+    "close": 1.90,
+}
+
 
 def _arguments() -> argparse.Namespace:
     separator = sys.argv.index("--") if "--" in sys.argv else len(sys.argv)
@@ -191,6 +197,12 @@ def _configure_prop(cue: dict[str, object]) -> None:
             obj.parent_bone = parent_bone
 
 
+def _camera_focus_point(target, preset: str) -> Vector:
+    focus = target.matrix_world.translation.copy()
+    focus.z += _CAMERA_FOCUS_HEIGHTS.get(preset, _CAMERA_FOCUS_HEIGHTS["wide"])
+    return focus
+
+
 def _configure_camera(cue: dict[str, object], frame_start: int, frame_end: int) -> None:
     camera = _object(str(cue["object_name"]))
     if camera.type != "CAMERA":
@@ -208,12 +220,21 @@ def _configure_camera(cue: dict[str, object], frame_start: int, frame_end: int) 
         camera.keyframe_insert(data_path="location", frame=frame_end)
         camera.keyframe_insert(data_path="rotation_euler", frame=frame_end)
 
+    preset = str(cue.get("preset", "wide")).lower()
     target_name = str(cue.get("look_at_object", ""))
     target = _object(target_name, required=False) if target_name else None
     if target is not None:
-        direction = target.matrix_world.translation - camera.matrix_world.translation
+        focus = _camera_focus_point(target, preset)
+        if preset == "close" and not isinstance(start_transform, dict):
+            camera.location.x = focus.x
+        direction = focus - camera.matrix_world.translation
         if direction.length >= 0.001:
             camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+        print(
+            "CAMERA_FOCUS="
+            f"{target.name}:{preset}:"
+            f"({focus.x:.3f},{focus.y:.3f},{focus.z:.3f})"
+        )
 
 
 def _configure_render(manifest: dict[str, object], output: Path) -> tuple[int, int, int]:
@@ -259,7 +280,6 @@ def main() -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
     fps, frame_start, frame_end = _configure_render(manifest, output_path)
-    _configure_camera(dict(manifest["camera"]), frame_start, frame_end)
     for cue in manifest.get("characters", []):
         _configure_character(
             dict(cue),
@@ -269,6 +289,7 @@ def main() -> None:
         )
     for cue in manifest.get("props", []):
         _configure_prop(dict(cue))
+    _configure_camera(dict(manifest["camera"]), frame_start, frame_end)
 
     bpy.context.scene.frame_set(frame_start)
     bpy.ops.wm.save_as_mainfile(filepath=str(output_path.with_suffix(".prepared.blend")))
