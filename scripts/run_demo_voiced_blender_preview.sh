@@ -13,6 +13,20 @@ PIPER_LOG="${PIPER_LOG:-$PWD/logs/piper-tts.log}"
 
 mkdir -p "$PWD/logs" "$VOICE_OUTPUT_DIR"
 
+bash -n \
+  scripts/setup_demo_piper.sh \
+  scripts/start_demo_piper.sh \
+  scripts/render_demo_blender_shot.sh \
+  scripts/render_demo_blender_sequence.sh \
+  scripts/run_demo_blender_preview.sh
+"$PYTHON_BINARY" -m compileall -q \
+  packages/blender/batch.py \
+  packages/blender/planner.py \
+  packages/blender/preview.py \
+  scripts/generate_demo_voice_lines.py \
+  scripts/plan_demo_blender_sequence.py \
+  workers/blender/shot_executor.py
+
 piper_ready() {
   "$PYTHON_BINARY" - "$PIPER_BASE_URL" <<'PY' >/dev/null 2>&1
 import json
