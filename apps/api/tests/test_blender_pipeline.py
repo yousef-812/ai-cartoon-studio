@@ -37,6 +37,18 @@ def test_blender_executor_keeps_string_emotion_as_metadata_only() -> None:
     assert 'keyframe_insert(data_path=\'["emotion"]\'' not in source
 
 
+def test_blender_executor_frames_above_the_rig_origin_after_character_placement() -> None:
+    source = (ROOT / "workers" / "blender" / "shot_executor.py").read_text(
+        encoding="utf-8"
+    )
+
+    character_loop = 'for cue in manifest.get("characters", []):'
+    camera_call = '_configure_camera(dict(manifest["camera"]), frame_start, frame_end)'
+    assert "_CAMERA_FOCUS_HEIGHTS" in source
+    assert "focus.z += _CAMERA_FOCUS_HEIGHTS.get" in source
+    assert source.index(character_loop) < source.index(camera_call)
+
+
 def test_viseme_fallback_is_bounded_and_monotonic() -> None:
     cues = build_viseme_cues(
         "المشكلة مش في البطارية",
