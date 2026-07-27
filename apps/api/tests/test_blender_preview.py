@@ -61,7 +61,7 @@ def test_preview_rejects_missing_selected_shot(tmp_path: Path) -> None:
         select_preview_items(_sequence(), tmp_path, limit=2)
 
 
-def test_preview_command_ignores_audio_and_normalizes_video(tmp_path: Path) -> None:
+def test_preview_command_preserves_audio_and_normalizes_video(tmp_path: Path) -> None:
     items = []
     for name in ("scene_01_shot_01.mp4", "scene_01_shot_02.mp4"):
         path = tmp_path / name
@@ -79,6 +79,8 @@ def test_preview_command_ignores_audio_and_normalizes_video(tmp_path: Path) -> N
     )
 
     assert concat.read_text(encoding="utf-8").count("file '") == 2
-    assert "-an" in command
+    assert "-an" not in command
+    assert "0:a:0?" in command
+    assert "aac" in command
     assert "libx264" in command
     assert "scale=1280:720" in command[command.index("-vf") + 1]
