@@ -4,6 +4,7 @@ set -euo pipefail
 BLENDER_BINARY="${BLENDER_BINARY:-blender}"
 PYTHON_BINARY="${PYTHON_BINARY:-python3}"
 SHOT_LIMIT="${SHOT_LIMIT:-3}"
+AUDIO_ROOT="${AUDIO_ROOT:-}"
 
 SCENE_PATH="${1:-$PWD/output/blender/workshop_of_light.blend}"
 MANIFEST_DIR="${2:-$PWD/output/blender/manifests}"
@@ -17,9 +18,19 @@ if ! [[ "$SHOT_LIMIT" =~ ^[0-9]+$ ]]; then
   echo "SHOT_LIMIT must be a non-negative integer: $SHOT_LIMIT" >&2
   exit 1
 fi
+if [[ -n "$AUDIO_ROOT" && ! -d "$AUDIO_ROOT" ]]; then
+  echo "Generated voice directory is missing: $AUDIO_ROOT" >&2
+  exit 1
+fi
 
-"$PYTHON_BINARY" scripts/plan_demo_blender_sequence.py \
+PLAN_ARGS=(
+  scripts/plan_demo_blender_sequence.py
   --output-dir "$MANIFEST_DIR"
+)
+if [[ -n "$AUDIO_ROOT" ]]; then
+  PLAN_ARGS+=(--audio-root "$AUDIO_ROOT")
+fi
+"$PYTHON_BINARY" "${PLAN_ARGS[@]}"
 
 mkdir -p "$OUTPUT_DIR"
 mapfile -t MANIFESTS < <(
