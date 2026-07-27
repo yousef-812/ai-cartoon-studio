@@ -78,9 +78,9 @@ def _face_object_towards(obj, target, frame_start: int, frame_end: int) -> None:
     obj.keyframe_insert(data_path="rotation_euler", frame=frame_end, index=2)
 
 
-def _apply_emotion(rig, emotion: str, frame_start: int) -> None:
+def _apply_emotion(rig, emotion: str) -> None:
+    # Blender string custom properties are metadata and cannot be keyframed.
     rig["emotion"] = emotion
-    rig.keyframe_insert(data_path='["emotion"]', frame=frame_start)
 
 
 def _apply_visemes(
@@ -152,7 +152,7 @@ def _configure_character(
     anchor = _object(str(cue["anchor_object"]))
     _copy_anchor_transform(rig, anchor, dict(cue.get("transform_offset", {})))
     _assign_action(rig, str(cue.get("action_name", "")))
-    _apply_emotion(rig, str(cue.get("emotion", "neutral")), frame_start)
+    _apply_emotion(rig, str(cue.get("emotion", "neutral")))
 
     target_name = str(cue.get("look_at_object", ""))
     target = _object(target_name, required=False) if target_name else None
