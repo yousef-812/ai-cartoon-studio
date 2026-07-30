@@ -102,7 +102,7 @@ class TimelineCue(BaseModel):
 
     @model_validator(mode="after")
     def validate_supported_cue(self) -> Self:
-        supported = {"light_flicker", "light_energy", "camera_push"}
+        supported = {"light_flicker", "light_energy", "camera_push", "character_look"}
         if self.kind not in supported:
             raise ValueError(f"Unsupported Blender timeline cue kind: {self.kind}")
         if self.kind == "light_flicker":
@@ -126,6 +126,21 @@ class TimelineCue(BaseModel):
                 raise ValueError("Camera push distance must be a number between 0 and 5")
             if not isinstance(focus_object, str) or not focus_object:
                 raise ValueError("Camera push cues require a focus_object parameter")
+        if self.kind == "character_look":
+            if self.duration_seconds <= 0:
+                raise ValueError("Character look cues require a positive duration")
+            focus_object = self.parameters.get("focus_object")
+            max_yaw_degrees = self.parameters.get("max_yaw_degrees", 65.0)
+            if not isinstance(focus_object, str) or not focus_object:
+                raise ValueError("Character look cues require a focus_object parameter")
+            if (
+                not isinstance(max_yaw_degrees, (int, float))
+                or max_yaw_degrees <= 0
+                or max_yaw_degrees > 120
+            ):
+                raise ValueError(
+                    "Character look max_yaw_degrees must be a number between 0 and 120"
+                )
         return self
 
 
