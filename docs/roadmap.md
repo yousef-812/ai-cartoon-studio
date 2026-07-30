@@ -2,6 +2,8 @@
 
 This roadmap preserves one final direction: a complete AI cartoon production studio. Each phase adds permanent production capability rather than creating a disposable prototype.
 
+> The active task-level plan, acceptance criteria, status ledger, and Golden Scene quality program are maintained in [Production Quality Execution Roadmap](production-quality-roadmap.md). Every production-quality addition must update that execution roadmap.
+
 ## Completed production foundation
 
 - Monorepo, FastAPI control plane, Next.js dashboard, Docker, PostgreSQL, Redis, Celery, and CI.
