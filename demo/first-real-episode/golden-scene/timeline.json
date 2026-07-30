@@ -56,6 +56,39 @@
         "parameters": {}
       },
       {
+        "kind": "character_look",
+        "target_object": "Nader_Rig",
+        "start_seconds": 0.05,
+        "duration_seconds": 0.35,
+        "values": [],
+        "parameters": {
+          "focus_object": "ENV_WindowGlass",
+          "max_yaw_degrees": 55.0
+        }
+      },
+      {
+        "kind": "character_look",
+        "target_object": "Nader_Rig",
+        "start_seconds": 0.62,
+        "duration_seconds": 0.42,
+        "values": [],
+        "parameters": {
+          "focus_object": "PROP_Lantern",
+          "max_yaw_degrees": 70.0
+        }
+      },
+      {
+        "kind": "character_look",
+        "target_object": "Nader_Rig",
+        "start_seconds": 1.12,
+        "duration_seconds": 0.34,
+        "values": [],
+        "parameters": {
+          "focus_object": "CAM_Medium",
+          "max_yaw_degrees": 35.0
+        }
+      },
+      {
         "kind": "camera_push",
         "target_object": "CAM_Medium",
         "start_seconds": 0.75,
