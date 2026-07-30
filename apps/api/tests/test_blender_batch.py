@@ -27,7 +27,11 @@ def test_approved_direction_builds_scene_scoped_blender_manifests() -> None:
     assert len({manifest.shot_key for manifest in manifests}) == 10
     assert manifests[0].shot_key == "scene:1:shot:1"
     assert manifests[-1].shot_key == "scene:4:shot:3"
-    assert sum(manifest.render.duration_seconds for manifest in manifests) == 40.0
+
+    durations = [manifest.render.duration_seconds for manifest in manifests]
+    assert durations == [3.2, 4.8, 3.6, 4.4, 3.4, 2.8, 5.8, 4.2, 3.8, 4.0]
+    assert len(set(durations)) > 1
+    assert round(sum(durations), 3) == 40.0
 
     first_scene_dialogue = manifests[0].characters[0].dialogue
     second_scene_dialogue = manifests[2].characters[0].dialogue
@@ -69,4 +73,4 @@ def test_batch_uses_actual_scene_line_audio_duration(tmp_path: Path) -> None:
     assert dialogue.audio_path == str(audio.resolve())
     assert dialogue.duration_seconds == 5.0
     assert manifests[0].render.duration_seconds == 5.35
-    assert manifests[1].render.duration_seconds == 4.0
+    assert manifests[1].render.duration_seconds == 4.8
