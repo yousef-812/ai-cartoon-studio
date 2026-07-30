@@ -7,7 +7,7 @@
     "Write the story, screenplay, and dialogue in clear Modern Standard Arabic.",
     "Use only Omar (عمر), Nader (نادر), and the approved main workshop location.",
     "Target exactly 10 short shots across 3 or 4 scenes and approximately 40 seconds total.",
-    "Keep every directed shot between 3.5 and 4.0 seconds for the free-GPU SVD workflow.",
+    "Let each directed shot duration follow its dialogue, action, and dramatic beat; use varied timings instead of a fixed per-shot duration.",
     "Assign at most one speaking character to each shot and never overlap dialogue.",
     "Use no more than one short spoken sentence in any shot.",
     "Keep dialogue lip-sync friendly: simple words, no long monologues, and visible front or three-quarter faces.",
