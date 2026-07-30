@@ -54,11 +54,14 @@ def test_golden_scene_timeline_is_injected_by_shot_key() -> None:
     assert [cue.kind for cue in manifests[1].timeline] == [
         "light_energy",
         "light_flicker",
+        "character_look",
+        "character_look",
+        "character_look",
         "camera_push",
     ]
     assert manifests[2].timeline == []
     assert manifests[0].metadata["timeline_cue_count"] == 4
-    assert manifests[1].metadata["timeline_cue_count"] == 3
+    assert manifests[1].metadata["timeline_cue_count"] == 6
 
 
 def test_timeline_rejects_unsupported_cue_kind() -> None:
@@ -67,6 +70,17 @@ def test_timeline_rejects_unsupported_cue_kind() -> None:
             kind="random_magic",
             target_object="LIGHT_Key",
             start_seconds=0,
+        )
+
+
+def test_character_look_requires_a_focus_object() -> None:
+    with pytest.raises(ValidationError, match="require a focus_object"):
+        TimelineCue(
+            kind="character_look",
+            target_object="Nader_Rig",
+            start_seconds=0.1,
+            duration_seconds=0.4,
+            parameters={"max_yaw_degrees": 45},
         )
 
 
@@ -104,4 +118,6 @@ def test_blender_executor_applies_timeline_after_camera_setup() -> None:
     assert "TIMELINE_CUE=light_flicker" in source
     assert "TIMELINE_CUE=light_energy" in source
     assert "TIMELINE_CUE=camera_push" in source
+    assert "TIMELINE_CUE=character_look" in source
+    assert '"character_look": _apply_character_look' in source
     assert source.index(camera_call) < source.rindex(timeline_call)
