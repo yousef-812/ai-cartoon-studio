@@ -92,6 +92,48 @@ class CameraCue(BaseModel):
     end_transform: Transform | None = None
 
 
+class TimelineCue(BaseModel):
+    kind: str = Field(min_length=2, max_length=100)
+    target_object: str = Field(min_length=1, max_length=200)
+    start_seconds: float = Field(default=0.0, ge=0, le=60)
+    duration_seconds: float = Field(default=0.0, ge=0, le=60)
+    values: list[float] = Field(default_factory=list, max_length=128)
+    parameters: dict[str, object] = Field(default_factory=dict, max_length=100)
+
+    @model_validator(mode="after")
+    def validate_supported_cue(self) -> Self:
+        supported = {"light_flicker", "light_energy", "camera_push"}
+        if self.kind not in supported:
+            raise ValueError(f"Unsupported Blender timeline cue kind: {self.kind}")
+        if self.kind == "light_flicker":
+            if self.duration_seconds <= 0:
+                raise ValueError("Light flicker cues require a positive duration")
+            if len(self.values) < 2:
+                raise ValueError("Light flicker cues require at least two energy multipliers")
+            if any(value < 0 or value > 4 for value in self.values):
+                raise ValueError("Light flicker multipliers must remain between 0 and 4")
+        if self.kind == "light_energy":
+            if len(self.values) != 1:
+                raise ValueError("Light energy cues require exactly one target multiplier")
+            if self.values[0] < 0 or self.values[0] > 4:
+                raise ValueError("Light energy multiplier must remain between 0 and 4")
+        if self.kind == "camera_push":
+            if self.duration_seconds <= 0:
+                raise ValueError("Camera push cues require a positive duration")
+            distance = self.parameters.get("distance")
+            focus_object = self.parameters.get("focus_object")
+            if not isinstance(distance, (int, float)) or distance <= 0 or distance > 5:
+                raise ValueError("Camera push distance must be a number between 0 and 5")
+            if not isinstance(focus_object, str) or not focus_object:
+                raise ValueError("Camera push cues require a focus_object parameter")
+        return self
+
+
+class ShotTimelineOverrides(BaseModel):
+    version: int = Field(default=1, ge=1, le=10)
+    shots: dict[str, list[TimelineCue]] = Field(default_factory=dict, max_length=2000)
+
+
 class RenderSettings(BaseModel):
     width: int = Field(default=1280, ge=256, le=4096)
     height: int = Field(default=720, ge=256, le=4096)
@@ -115,10 +157,11 @@ class BlenderShotManifest(BaseModel):
     camera: CameraCue
     characters: list[BlenderCharacterCue] = Field(default_factory=list, max_length=20)
     props: list[PropCue] = Field(default_factory=list, max_length=100)
+    timeline: list[TimelineCue] = Field(default_factory=list, max_length=1000)
     metadata: dict[str, object] = Field(default_factory=dict)
 
     @model_validator(mode="after")
-    def validate_dialogue_window(self) -> Self:
+    def validate_timing_windows(self) -> Self:
         for character in self.characters:
             dialogue = character.dialogue
             if dialogue is None:
@@ -129,4 +172,9 @@ class BlenderShotManifest(BaseModel):
                 )
             if dialogue.speaker != character.name:
                 raise ValueError("Dialogue speaker must match its character cue")
+        for cue in self.timeline:
+            if cue.start_seconds + cue.duration_seconds > self.render.duration_seconds + 0.001:
+                raise ValueError(
+                    f"Timeline cue {cue.kind} for {cue.target_object} exceeds the shot duration"
+                )
         return self
