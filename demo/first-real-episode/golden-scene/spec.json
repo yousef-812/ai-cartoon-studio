@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "scene_key": "golden-scene:storm-lamp-opening",
+  "episode_title": "مصباح العاصفة",
+  "scene_title": "الانطفاء",
+  "purpose": "Prove that the automated pipeline can produce an understandable and engaging story event rather than a technically valid static preview.",
+  "shot_keys": [
+    "scene:1:shot:1",
+    "scene:1:shot:2"
+  ],
+  "planned_duration_seconds": 8.0,
+  "characters": [
+    {
+      "name": "عمر",
+      "required_identity": [
+        "teal workshop jacket",
+        "round glasses",
+        "calm young inventor silhouette"
+      ],
+      "emotional_arc": [
+        "working calm",
+        "instant surprise",
+        "focused concern"
+      ]
+    },
+    {
+      "name": "نادر",
+      "required_identity": [
+        "orange hoodie",
+        "navy workshop apron",
+        "younger energetic silhouette"
+      ],
+      "emotional_arc": [
+        "watching the storm",
+        "quiet worry",
+        "attention returns to the failed lamp"
+      ]
+    }
+  ],
+  "required_objects": [
+    "PROP_Lantern",
+    "ENV_WindowGlass",
+    "LIGHT_Key",
+    "LIGHT_Fill",
+    "LIGHT_Lantern"
+  ],
+  "beats": [
+    {
+      "id": "GS-01",
+      "shot_key": "scene:1:shot:1",
+      "start_seconds": 0.0,
+      "end_seconds": 0.9,
+      "story_function": "Inciting visual event",
+      "visual": "The workshop light flickers several times and the emergency lamp loses its glow.",
+      "performance": "Both characters notice the change; Omar reacts first.",
+      "audio": "Rain ambience continues; flicker/electrical sound will align with visible changes.",
+      "acceptance": "The light failure is understandable with audio muted and faces remain readable."
+    },
+    {
+      "id": "GS-02",
+      "shot_key": "scene:1:shot:1",
+      "start_seconds": 0.55,
+      "end_seconds": 2.35,
+      "story_function": "Direct attention to the problem",
+      "visual": "A subtle camera push moves attention toward the characters and centered workbench.",
+      "performance": "Omar transitions from reaction into the spoken line.",
+      "audio": "Omar says: انطفأ الضوء!",
+      "acceptance": "The camera move is visible but not distracting, and Omar remains clearly framed."
+    },
+    {
+      "id": "GS-03",
+      "shot_key": "scene:1:shot:1",
+      "start_seconds": 2.35,
+      "end_seconds": 3.2,
+      "story_function": "Reaction hold",
+      "visual": "The darker lighting state holds after the line.",
+      "performance": "Omar remains concerned; Nader prepares to respond rather than freezing neutrally.",
+      "audio": "Short intentional pause with storm ambience.",
+      "acceptance": "The pause feels intentional and maintains visual life."
+    },
+    {
+      "id": "GS-04",
+      "shot_key": "scene:1:shot:2",
+      "start_seconds": 0.18,
+      "end_seconds": 0.56,
+      "story_function": "Reinforce the storm cause",
+      "visual": "A brief cool lightning flash comes from the window side.",
+      "performance": "Nader's attention is motivated by the storm before returning to the lamp.",
+      "audio": "Distant thunder follows the visible flash with a natural delay.",
+      "acceptance": "The flash reads as external storm light and does not overexpose Nader's face."
+    },
+    {
+      "id": "GS-05",
+      "shot_key": "scene:1:shot:2",
+      "start_seconds": 0.75,
+      "end_seconds": 2.85,
+      "story_function": "Character response",
+      "visual": "A subtle push keeps Nader as the clear subject.",
+      "performance": "Nader shifts attention from window to lamp and delivers the line with quiet concern.",
+      "audio": "Nader says: العاصفة تشتد.",
+      "acceptance": "Nader remains centered, emotionally readable, and visually distinct from Omar."
+    },
+    {
+      "id": "GS-06",
+      "shot_key": "scene:1:shot:2",
+      "start_seconds": 2.85,
+      "end_seconds": 4.8,
+      "story_function": "End beat and continuation hook",
+      "visual": "The failed lamp remains the shared focus in the darker workshop.",
+      "performance": "Nader settles; the scene leaves a clear question about the lamp failure.",
+      "audio": "Rain and workshop room tone continue under a short hold.",
+      "acceptance": "The viewer understands the problem and has a reason to continue."
+    }
+  ],
+  "render_profile": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "preview_engine": "BLENDER_EEVEE_NEXT",
+    "audio_sample_rate": 48000,
+    "audio_channels": 2
+  },
+  "hard_failures": [
+    "empty or incorrectly targeted framing",
+    "unlisted character visible in a shot",
+    "dialogue without an audio stream",
+    "timeline cue outside shot duration",
+    "missing required object",
+    "face unreadable during the spoken line",
+    "light flicker that appears random or causes sustained overexposure",
+    "camera movement that crops the speaking character"
+  ],
+  "human_review_questions": [
+    "Is the light failure clear without explanation?",
+    "Do Omar and Nader appear to notice and react to the same event?",
+    "Does each camera move have a dramatic purpose?",
+    "Are the dialogue lines emotionally appropriate?",
+    "Does the scene feel alive during pauses?",
+    "Would the reviewer voluntarily continue watching?"
+  ],
+  "approval_state": "pending"
+}
