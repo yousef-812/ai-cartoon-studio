@@ -15,7 +15,7 @@ The target experience is:
 - clear story beats and visual cause-and-effect;
 - appealing and recognizable permanent characters;
 - readable acting, eye lines, reactions, gestures, and facial expressions;
-- deliberate framing and camera motivation;
+- deliberate framing and motivated camera movement;
 - lighting and effects that support the story;
 - character-specific voice identity and emotional delivery;
 - synchronized mouth movement and dialogue timing;
@@ -39,17 +39,20 @@ A technically valid MP4 is not a successful result. Passing media probes is a de
 - [x] WAV normalization and dialogue placement in Blender renders.
 - [x] Timed viseme fallback and MP4 audio output.
 - [x] Ordered multi-shot preview assembly with duration and stream reports.
-- [x] Basic framing fixes using registered character anchors.
+- [x] Framing fixes using registered character anchors.
+- [x] Validated timed-cue fields in Blender shot manifests.
+- [x] Shot-keyed Golden Scene timeline overrides.
+- [x] Headless Blender handlers for flicker, light energy, and camera push cues.
 
 ### Baseline quality limitations
 
 - [ ] Placeholder character models are not production-quality assets.
 - [ ] Facial expressions are minimal and not emotionally convincing.
 - [ ] Body acting is mostly a single full-shot action (`Talk`, `Listen`, etc.).
-- [ ] Story events are described in metadata but are not consistently performed visually.
-- [ ] Lighting is mostly static.
-- [ ] Camera movement text is not yet converted into timed camera performance.
-- [ ] Rain, thunder, flicker, spark, prop state, and other effects are not yet a reusable event system.
+- [ ] Story events outside the first Golden Scene timeline are not consistently performed visually.
+- [ ] Lighting outside timed Golden Scene cues remains mostly static.
+- [ ] Camera movement currently supports the first deterministic push cue only.
+- [ ] Rain, thunder, spark, prop state, expression, and layered body cues are not yet implemented.
 - [ ] Piper voices are stable but still require stronger acting direction or a higher-quality provider.
 - [ ] Lip sync is phoneme-estimated rather than forced-aligned.
 - [ ] Sound design and music are not yet present in the Blender preview path.
@@ -58,13 +61,13 @@ A technically valid MP4 is not a successful result. Passing media probes is a de
 ## 3. Status legend
 
 - `DONE`: implemented, validated, and retained in the production path.
-- `IN PROGRESS`: implementation has started and has an executable artifact.
+- `IN PROGRESS`: implementation has started and has an executable artifact, but acceptance is incomplete.
 - `READY`: requirements and dependencies are complete; work can begin.
 - `BLOCKED`: a named dependency is missing.
 - `PLANNED`: accepted scope but not yet ready.
 - `DEFERRED`: intentionally postponed with a reason.
 
-## 4. Delivery strategy
+## 4. Golden Scene strategy
 
 Quality will be developed through one **Golden Scene** before scaling to the full episode.
 
@@ -73,10 +76,18 @@ The first Golden Scene is the opening of **مصباح العاصفة**:
 1. the workshop light flickers;
 2. the emergency lamp fails;
 3. Omar reacts and says: `انطفأ الضوء!`;
-4. Nader looks toward the storm window, returns his attention to the lamp, and says: `العاصفة تشتد.`;
+4. Nader notices the storm, returns attention to the lamp, and says: `العاصفة تشتد.`;
 5. the scene must feel like a story event, not two static talking shots.
 
 The first approved Golden Scene becomes the reference for character quality, acting density, camera grammar, lighting, sound, and automated quality checks.
+
+The committed quality contract is:
+
+- `demo/first-real-episode/golden-scene/spec.json`
+
+The first committed timed event plan is:
+
+- `demo/first-real-episode/golden-scene/timeline.json`
 
 ## 5. Dependency graph
 
@@ -95,7 +106,7 @@ M0 Baseline and quality contract
                                   -> M11 Production dashboard and release operations
 ```
 
-Some work can proceed in parallel, but full-episode rendering is blocked until M8 is approved.
+Some work can proceed in parallel, but full-episode production approval is blocked until M8.
 
 ---
 
@@ -111,44 +122,46 @@ Create objective evidence for every visual-quality iteration and prevent technic
 
 ### Tasks
 
-- [x] Preserve the current voiced preview and media reports as the technical baseline.
-- [x] Record the decision that the current output is a previs/prototype, not release-quality animation.
-- [ ] Add a Golden Scene specification with required beats, expected framing, lighting states, audio events, and emotional intent.
-- [ ] Add a structured human-review checklist covering story clarity, appeal, acting, framing, continuity, audio, and desire to continue watching.
-- [ ] Add a review record format with reviewer decision, blocking notes, screenshots, and output checksums.
+- [x] Preserve the voiced preview and media reports as the technical baseline.
+- [x] Record that the current output is previs/prototype, not release-quality animation.
+- [x] Add a Golden Scene specification with beats, framing intent, lighting states, audio events, emotional intent, and hard failures.
+- [x] Include human-review questions covering story clarity, acting, framing, audio, and desire to continue watching in the Golden Scene spec.
+- [ ] Add a review record schema with reviewer decision, blocking notes, screenshots, artifact versions, and checksums.
 - [ ] Generate consistent contact sheets at defined timestamps for every Golden Scene iteration.
+- [ ] Prevent rejected Golden Scene outputs from being promoted as approved artifacts.
 
 ### Acceptance criteria
 
 - Every Golden Scene run produces video, media report, contact sheet, and review record.
 - Review can fail even when rendering, FFmpeg, and media probes succeed.
-- A rejected version cannot be marked as production-approved.
+- A rejected version cannot be marked production-approved.
 
-### Expected artifacts
+### Artifacts
 
-- `demo/first-real-episode/golden-scene/spec.json`
-- `output/golden-scene/review.json`
-- `output/golden-scene/contact-sheet.png`
+- [x] `demo/first-real-episode/golden-scene/spec.json`
+- [ ] `output/golden-scene/review.json`
+- [ ] `output/golden-scene/contact-sheet.png`
 
 ---
 
 ## M1 — Timed performance and event runtime
 
-**Status:** `IN PROGRESS`
+**Status:** `IN PROGRESS` — code complete for first cue set; Lightning render validation pending
 
 ### Purpose
 
 Replace static one-action shots with an explicit timeline of story events.
 
-### Scope
+### Implemented cue types
 
-A shot manifest gains ordered timed cues. The Blender executor converts those cues into keyframes and validates that every cue fits inside the shot duration.
+- `light_flicker`: deterministic energy multipliers distributed through a timed window.
+- `light_energy`: deterministic light-energy state change.
+- `camera_push`: deterministic camera movement along its current viewing direction, with a required focus-object reference.
 
-### Cue families
+### Planned cue families
 
-- lighting energy and color changes;
-- flicker and lightning flashes;
-- camera pushes, pulls, pans, and holds;
+- lighting color and temperature transitions;
+- camera pull, pan, tilt, rack focus, and hold;
 - character look targets and timed head turns;
 - expression changes and blink cues;
 - layered body-action segments;
@@ -159,16 +172,22 @@ A shot manifest gains ordered timed cues. The Blender executor converts those cu
 
 ### Tasks
 
-- [ ] Add validated timeline-cue models to the Blender manifest contract.
-- [ ] Add a shot-keyed override format for approved performance timelines.
-- [ ] Load timeline overrides during batch manifest planning.
-- [ ] Implement light-flicker execution.
-- [ ] Implement light-energy transitions.
-- [ ] Implement camera push/pull execution.
-- [ ] Print deterministic cue execution logs.
-- [ ] Reject unknown cue types and out-of-bounds cue windows.
-- [ ] Add targeted unit tests for model validation and manifest injection.
-- [ ] Add Blender source-contract tests for supported executors.
+- [x] Add validated timeline-cue models to the Blender manifest contract.
+- [x] Add a shot-keyed override format for approved performance timelines.
+- [x] Load timeline overrides during batch manifest planning.
+- [x] Preserve backward compatibility when no timeline override is supplied.
+- [x] Include cue counts and override source in generated sequence metadata.
+- [x] Implement light-flicker execution.
+- [x] Implement light-energy execution.
+- [x] Implement camera-push execution.
+- [x] Apply cues after camera and character placement.
+- [x] Print deterministic cue execution logs.
+- [x] Reject unknown cue types and out-of-bounds cue windows.
+- [x] Add targeted tests for model validation and manifest injection.
+- [x] Add Blender source-contract tests for supported executors.
+- [ ] Run targeted compile/tests in Lightning.
+- [ ] Render Scene 1 Shots 1–2 with the committed timeline.
+- [ ] Review flicker, exposure, camera movement, and face readability.
 
 ### Acceptance criteria
 
@@ -177,18 +196,23 @@ A shot manifest gains ordered timed cues. The Blender executor converts those cu
 - Scene 1 Shot 2 includes a storm-light flash without changing shot duration.
 - Replanning the same inputs creates identical timeline manifests.
 - Invalid cues fail before Blender starts rendering.
+- The cue implementation passes a real Blender render, not only source tests.
 
-### Expected artifacts
+### Artifacts
 
-- `demo/first-real-episode/golden-scene/timeline.json`
-- timeline fields inside `output/blender/manifests/scene_01_shot_01.json`
-- cue execution lines in the Blender render log
+- [x] `demo/first-real-episode/golden-scene/timeline.json`
+- [x] Timeline schema in `packages/blender/models.py`
+- [x] Batch injection in `packages/blender/batch.py`
+- [x] CLI loading in `scripts/plan_demo_blender_sequence.py`
+- [x] Blender execution in `workers/blender/shot_executor.py`
+- [x] Tests in `apps/api/tests/test_blender_timeline.py`
+- [ ] Rendered Golden Scene preview with visible cue execution
 
 ---
 
 ## M2 — Golden Scene lighting, effects, and camera grammar
 
-**Status:** `READY` after M1 core cues
+**Status:** `IN PROGRESS` — first flicker and push design committed; visual approval pending
 
 ### Purpose
 
@@ -196,23 +220,25 @@ Make the opening feel like a storm-driven story event.
 
 ### Tasks
 
-- [ ] Establish cool storm-night base lighting.
-- [ ] Add controlled workshop-light flicker with readable faces.
-- [ ] Add emergency-lamp failure and dim state.
-- [ ] Add window lightning flash without overexposure.
+- [ ] Establish a reviewed cool storm-night base-lighting state.
+- [x] Commit deterministic workshop-light flicker values for Shot 1.
+- [x] Commit emergency-lamp failure values for Shot 1.
+- [x] Commit a window-side lightning-flash cue for Shot 2.
+- [ ] Validate the flash does not overexpose Nader.
 - [ ] Add rain motion or a reusable window-rain effect.
-- [ ] Add a subtle push-in motivated by the light failure.
-- [ ] Add a reaction hold after Omar's line.
-- [ ] Add a Nader eyeline change: window -> lamp -> speaking direction.
-- [ ] Define shot-specific lens, headroom, and safe framing rules.
+- [x] Commit subtle push-in cues motivated by the light failure and Nader response.
+- [ ] Add a timed reaction hold after Omar's line.
+- [ ] Add Nader eyeline change: window -> lamp -> speaking direction.
+- [ ] Define shot-specific lens, headroom, and safe-framing rules.
 - [ ] Add render-time checks that the active camera targets the approved focus anchor.
+- [ ] Add exposure and face-readability evidence to the Golden Scene report.
 
 ### Acceptance criteria
 
-- A muted viewing still communicates that the light failed during a storm.
+- Muted viewing communicates that the light failed during a storm.
 - Both faces remain readable through the light transition.
-- Camera movement is subtle and does not feel procedural or random.
-- No shot contains empty framing or unintended character overlap.
+- Camera movement feels motivated, subtle, and non-procedural.
+- No shot contains empty framing, unwanted crop, or unintended character overlap.
 
 ---
 
@@ -244,7 +270,7 @@ Replace placeholder primitives with appealing permanent characters while preserv
 
 - [ ] Approve turnaround and expression reference sheets.
 - [ ] Produce or import production meshes with documented licensing.
-- [ ] Preserve `Omar_Rig`, `Nader_Rig`, mouth object, and registry identities or provide migration tooling.
+- [ ] Preserve `Omar_Rig`, `Nader_Rig`, mouth-object, and registry identities or provide migration tooling.
 - [ ] Add glasses, wardrobe details, and signature props.
 - [ ] Add skin, fabric, hair, eye, and accent materials.
 - [ ] Add LOD or preview-quality variants for fast iteration.
@@ -278,7 +304,7 @@ Replace placeholder primitives with appealing permanent characters while preserv
 
 - Dialogue is understandable with audio muted through mouth rhythm and expression.
 - Characters do not stare blankly or blink mechanically.
-- Emotional state is visible before or during the spoken line.
+- Emotional state is visible before or during the line.
 - No lip movement continues after dialogue audio ends.
 
 ---
@@ -290,13 +316,13 @@ Replace placeholder primitives with appealing permanent characters while preserv
 ### Tasks
 
 - [ ] Replace placeholder `Surprised` and `Worried` clips with authored motions.
-- [ ] Add short reaction, settle, listen, think, look, point, reach, recoil, hold, and smile clips.
+- [ ] Add reaction, settle, listen, think, look, point, reach, recoil, hold, and smile clips.
 - [ ] Add NLA-based action layering instead of one action for the entire shot.
 - [ ] Support timed action segments and transitions.
 - [ ] Add additive head, spine, hand, and breathing layers.
 - [ ] Add prop-hand constraints and release timing.
-- [ ] Add character-specific motion style parameters.
-- [ ] Add motion retargeting contract for external libraries or mocap.
+- [ ] Add character-specific motion-style parameters.
+- [ ] Add a motion-retargeting contract for external libraries or mocap.
 
 ### Acceptance criteria
 
@@ -309,7 +335,7 @@ Replace placeholder primitives with appealing permanent characters while preserv
 
 ## M6 — Voice acting quality and dialogue timing
 
-**Status:** `READY` for provider evaluation; alignment depends on M4
+**Status:** `READY` for provider evaluation; forced alignment depends on M4
 
 ### Tasks
 
@@ -320,15 +346,15 @@ Replace placeholder primitives with appealing permanent characters while preserv
 - [ ] Add acting controls for urgency, restraint, warmth, worry, and relief.
 - [ ] Add pronunciation overrides and diacritization support.
 - [ ] Add silence trimming while preserving intentional breaths.
-- [ ] Add automatic loudness normalization per voice line.
-- [ ] Add forced phoneme alignment output.
+- [ ] Add automatic loudness normalization per line.
+- [ ] Add forced phoneme-alignment output.
 - [ ] Add human voice review and selective regeneration.
 
 ### Acceptance criteria
 
 - Omar and Nader are distinguishable without seeing the screen.
-- Delivery matches the screenplay emotion and action beat.
-- Dialogue begins and ends within the intended performance window.
+- Delivery matches screenplay emotion and action beat.
+- Dialogue begins and ends inside the intended performance window.
 - Regenerating one line does not change other approved lines.
 
 ---
@@ -352,7 +378,7 @@ Replace placeholder primitives with appealing permanent characters while preserv
 
 - Audio alone communicates storm, workshop, failure, reaction, and recovery.
 - Dialogue remains intelligible on phone speakers.
-- Effects support visible events and never lead or lag noticeably.
+- Effects support visible events and do not lead or lag noticeably.
 - The mix has no clipping, sudden gain jumps, or distracting loops.
 
 ---
@@ -368,7 +394,7 @@ Replace placeholder primitives with appealing permanent characters while preserv
 - Do they appear to think and react rather than merely move?
 - Is every camera choice motivated?
 - Are lighting and sound supporting the same dramatic beat?
-- Does the viewer want to continue watching after the scene?
+- Does the viewer want to continue watching?
 
 ### Hard acceptance criteria
 
@@ -376,7 +402,7 @@ Replace placeholder primitives with appealing permanent characters while preserv
 - No blocking framing, clipping, continuity, audio, or lip-sync issues.
 - Media QC passes.
 - The scene can be regenerated from committed inputs and registered assets.
-- The approved output checksum and asset versions are recorded.
+- Approved output checksum and asset versions are recorded.
 
 ---
 
@@ -389,7 +415,7 @@ Replace placeholder primitives with appealing permanent characters while preserv
 - [ ] Convert all ten directed shots into detailed performance timelines.
 - [ ] Implement lamp indicator, loose wire, reach, spark, recoil, warning gesture, stabilization, reconnection, and final glow.
 - [ ] Preserve variable durations and variable character counts.
-- [ ] Add continuity state for prop position and lighting state across shots.
+- [ ] Add continuity state for prop position and lighting across shots.
 - [ ] Add reaction coverage and editorial pacing.
 - [ ] Render low-cost previews before production-quality frames.
 - [ ] Review and approve each shot independently.
@@ -400,7 +426,7 @@ Replace placeholder primitives with appealing permanent characters while preserv
 - Every planned beat is visibly performed.
 - The episode has a clear beginning, escalation, failure, correction, and payoff.
 - No shot feels like filler or a repeated talking template.
-- Full episode approval is separate from Golden Scene approval.
+- Full-episode approval remains separate from Golden Scene approval.
 
 ---
 
@@ -412,19 +438,19 @@ Replace placeholder primitives with appealing permanent characters while preserv
 
 - [ ] Camera-target and subject-in-frame checks.
 - [ ] Face visibility, headroom, and screen-coverage checks.
-- [ ] Character count and unintended-character visibility checks.
+- [ ] Character-count and unintended-character checks.
 - [ ] Eye-line and dialogue-speaker checks.
 - [ ] Mouth activity versus audio-window checks.
 - [ ] Frozen-pose and excessive-static-shot detection.
 - [ ] Lighting range and over/underexposure checks.
-- [ ] Prop continuity and state-transition checks.
+- [ ] Prop-continuity and state-transition checks.
 - [ ] Audio stream, loudness, clipping, silence, and synchronization checks.
 - [ ] Contact-sheet comparison and approved-reference regression checks.
 
 ### Acceptance criteria
 
 - Known framing and visibility failures are caught before human review.
-- A quality regression blocks promotion but not unrelated development work.
+- Quality regression blocks promotion without blocking unrelated development.
 - Reports identify the exact shot, frame range, and failed rule.
 
 ---
@@ -440,15 +466,15 @@ Replace placeholder primitives with appealing permanent characters while preserv
 - [ ] Allow retry of one failed cue, voice, effect, or shot.
 - [ ] Record approvals, notes, artifact versions, and checksums.
 - [ ] Provide low-resolution preview and production render profiles.
-- [ ] Generate release manifest, subtitle packages, thumbnail, title, description, tags, chapters, and credits.
+- [ ] Generate release manifest, subtitles, thumbnail, title, description, tags, chapters, and credits.
 - [ ] Track licenses for models, textures, meshes, motion, music, fonts, and datasets.
 - [ ] Keep publishing manual by default until explicitly approved.
 
 ---
 
-# 6. Work streams
+# Work streams
 
-## A. Runtime and automation
+## Runtime and automation
 
 - manifest schemas;
 - timeline planning;
@@ -457,7 +483,7 @@ Replace placeholder primitives with appealing permanent characters while preserv
 - retry and recovery;
 - QC reports.
 
-## B. Character art
+## Character art
 
 - concept approval;
 - modeling;
@@ -466,7 +492,7 @@ Replace placeholder primitives with appealing permanent characters while preserv
 - wardrobe;
 - rig integration.
 
-## C. Acting and direction
+## Acting and direction
 
 - performance beats;
 - facial poses;
@@ -475,7 +501,7 @@ Replace placeholder primitives with appealing permanent characters while preserv
 - reaction timing;
 - editorial pacing.
 
-## D. Audio
+## Audio
 
 - voice identity;
 - acting delivery;
@@ -485,7 +511,7 @@ Replace placeholder primitives with appealing permanent characters while preserv
 - music;
 - final mix.
 
-## E. Review and release
+## Review and release
 
 - contact sheets;
 - human review;
@@ -494,42 +520,65 @@ Replace placeholder primitives with appealing permanent characters while preserv
 - licensing;
 - final release package.
 
-# 7. Definition of done for any roadmap item
+# Definition of done for any roadmap item
 
 An item can be marked `DONE` only when all applicable conditions hold:
 
 1. implementation is committed on the active branch;
 2. schema and error handling are defined;
 3. targeted tests or deterministic validation exist;
-4. an executable artifact or report demonstrates the behavior;
+4. an executable artifact or report demonstrates behavior;
 5. documentation and this roadmap are updated;
 6. no unrelated GitHub Actions run is triggered merely to record progress;
-7. any known limitation is written explicitly.
+7. known limitations are written explicitly.
 
-# 8. Execution policy
+# Execution policy
 
 - Keep PR #1 in Draft until the Golden Scene gate is approved or the user explicitly changes the policy.
 - Do not merge automatically.
 - Do not render all production shots merely because the pipeline can do so.
-- Use three-shot or Golden Scene previews while visual quality is still changing.
+- Use two-shot Golden Scene previews while visual quality is changing.
 - Reuse generated voice lines unless voice quality itself is under review.
 - Prefer code-driven reusable systems over one-off manual Blender edits.
-- Preserve the permanent scene registry contract when replacing art assets.
+- Preserve the permanent scene-registry contract when replacing assets.
 - Heavy GitHub Actions remain manual or Draft-to-Ready only.
 
-# 9. Progress ledger
+# Progress ledger
 
 ## 2026-07-30 — Roadmap initialized
 
-- Added the detailed production-quality execution roadmap.
-- Classified the current output as validated previs, not final animation.
-- Set the Golden Scene as the only path to full-episode production approval.
+- Commits: `917ebe0`, `8e32ce4`
+- Added the detailed production-quality execution roadmap and linked it from the product roadmap.
+- Classified current output as validated previs, not final animation.
+- Set the Golden Scene as the gate for full-episode production.
 - Started M0 and M1.
-- Selected the timed performance/event runtime as the first implementation target.
+
+## 2026-07-30 — Golden Scene quality contract
+
+- Commit: `45889be`
+- Completed: M0 Golden Scene specification and initial human-review questions.
+- Artifact: `demo/first-real-episode/golden-scene/spec.json`
+- Validation: JSON/schema validation will run in the targeted Lightning check.
+- Known limitation: review-record and contact-sheet automation are not implemented yet.
+- Next action: create review schema and contact-sheet generator after the first cue render.
+
+## 2026-07-30 — Timed Blender cue foundation
+
+- Commits: `4a00a33`, `ca294e6`, `f994469`, `d3e72a0`, `e3bc986`, `417d3ea`, `a634423`, `c0b2691`, `db68618`
+- Completed code tasks: validated cue models, shot-keyed overrides, batch injection, CLI loading, flicker, light-energy, camera-push execution, deterministic logs, compatibility handling, and targeted tests.
+- Artifacts:
+  - `demo/first-real-episode/golden-scene/timeline.json`
+  - `packages/blender/models.py`
+  - `packages/blender/planner.py`
+  - `packages/blender/batch.py`
+  - `scripts/plan_demo_blender_sequence.py`
+  - `workers/blender/shot_executor.py`
+  - `apps/api/tests/test_blender_timeline.py`
+- Validation: source review completed; local container could not reach GitHub for checkout. Lightning compile, targeted tests, and real Blender render remain required.
+- Known limitations: only three cue types are currently supported; no timed character-acting cues or sound-effect cues yet.
+- Next action: pull the branch in Lightning, run targeted checks, and render only Scene 1 Shots 1–2 with sound.
 
 ## Update template
-
-Every meaningful addition should append an entry using this structure:
 
 ```markdown
 ## YYYY-MM-DD — <short milestone update>
