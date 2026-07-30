@@ -35,12 +35,14 @@ class BlenderShotPlanner:
         speaker_name, dialogue = self._dialogue_for_shot(shot, dialogue_by_order)
         render_duration = self._render_duration(shot.duration_seconds, dialogue)
         characters: list[BlenderCharacterCue] = []
+        anchor_by_name: dict[str, str] = {}
         for index, name in enumerate(shot.characters):
             registered = self.registry.character(name)
             anchor_key = self._anchor_key(name, index, len(shot.characters), registered.anchors)
             anchor_object = registered.anchors.get(anchor_key) or registered.default_anchor
             if not anchor_object:
                 raise ValueError(f"Character '{name}' has no usable Blender anchor")
+            anchor_by_name[name] = anchor_object
 
             action_key = self._action_key(shot, name, speaker_name)
             action_name = registered.actions.get(action_key) or registered.actions.get("idle", "")
@@ -88,6 +90,12 @@ class BlenderShotPlanner:
                 )
             )
 
+        camera_target = self._camera_target(
+            shot.characters,
+            anchor_by_name=anchor_by_name,
+            speaker_name=speaker_name,
+            shot_size=shot.shot_size,
+        )
         return BlenderShotManifest(
             scene_number=shot.scene_number,
             shot_number=shot.number,
@@ -103,11 +111,7 @@ class BlenderShotPlanner:
             camera=CameraCue(
                 preset=camera_preset,
                 object_name=camera_object,
-                look_at_object=self._camera_target(
-                    shot.characters,
-                    speaker_name=speaker_name,
-                    camera_preset=camera_preset,
-                ),
+                look_at_object=camera_target,
                 movement=shot.camera_movement,
             ),
             characters=characters,
@@ -120,6 +124,7 @@ class BlenderShotPlanner:
                 "continuity_requirements": shot.continuity_requirements,
                 "direction_duration_seconds": shot.duration_seconds,
                 "render_duration_seconds": render_duration,
+                "camera_target_object": camera_target,
             },
         )
 
@@ -143,6 +148,8 @@ class BlenderShotPlanner:
     @staticmethod
     def _camera_preset(shot_size: str) -> str:
         lowered = shot_size.lower()
+        if any(token in lowered for token in ("medium close", "medium-close", "متوسط قريب")):
+            return "medium"
         if any(token in lowered for token in ("close", "قريب", "تفصيل")):
             return "close"
         if any(token in lowered for token in ("medium", "متوسط")):
@@ -162,6 +169,17 @@ class BlenderShotPlanner:
                     return candidate
         candidates = ("left", "workbench_left") if index == 0 else ("right", "workbench_right")
         for candidate in candidates:
+            if candidate in available:
+                return candidate
+        for candidate in (
+            "left",
+            "workbench_left",
+            "right",
+            "workbench_right",
+            "center",
+            "workbench_center",
+            "default",
+        ):
             if candidate in available:
                 return candidate
         return next(iter(available), "")
@@ -221,17 +239,30 @@ class BlenderShotPlanner:
             return self.registry.character(name).rig_object
         return camera_object if camera_preset == "close" else ""
 
+    @staticmethod
     def _camera_target(
-        self,
         names: list[str],
         *,
+        anchor_by_name: dict[str, str],
         speaker_name: str,
-        camera_preset: str,
+        shot_size: str,
     ) -> str:
-        if speaker_name:
-            return self.registry.character(speaker_name).rig_object
         if not names:
             return ""
-        if len(names) == 1 or camera_preset == "close":
-            return self.registry.character(names[0]).rig_object
-        return "ANCHOR_Workbench_Center"
+
+        lowered = shot_size.lower()
+        group_tokens = (
+            "wide",
+            "two shot",
+            "two-shot",
+            "reaction",
+            "لقطة واسعة",
+            "لقطة ثنائية",
+        )
+        if len(names) > 1 and (
+            not speaker_name or any(token in lowered for token in group_tokens)
+        ):
+            return "ANCHOR_Workbench_Center"
+
+        focus_name = speaker_name or names[0]
+        return anchor_by_name.get(focus_name, "")
