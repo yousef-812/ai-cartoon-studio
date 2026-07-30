@@ -267,6 +267,148 @@ def _configure_camera(cue: dict[str, object], frame_start: int, frame_end: int) 
         )
 
 
+def _timeline_frame(
+    seconds: float,
+    *,
+    fps: int,
+    frame_start: int,
+    frame_end: int,
+) -> int:
+    frame = frame_start + round(seconds * fps)
+    return min(frame_end, max(frame_start, frame))
+
+
+def _apply_light_flicker(
+    cue: dict[str, object],
+    *,
+    fps: int,
+    frame_start: int,
+    frame_end: int,
+) -> None:
+    target = _object(str(cue["target_object"]))
+    if target.type != "LIGHT" or target.data is None:
+        raise RuntimeError(f"Timeline target is not a Blender light: {target.name}")
+    values = [float(value) for value in cue.get("values", [])]
+    if len(values) < 2:
+        raise RuntimeError("Light flicker requires at least two energy multipliers")
+    start_seconds = float(cue.get("start_seconds", 0.0))
+    duration_seconds = float(cue.get("duration_seconds", 0.0))
+    base_energy = float(target.data.energy)
+    for index, multiplier in enumerate(values):
+        progress = index / (len(values) - 1)
+        seconds = start_seconds + (duration_seconds * progress)
+        frame = _timeline_frame(
+            seconds,
+            fps=fps,
+            frame_start=frame_start,
+            frame_end=frame_end,
+        )
+        target.data.energy = base_energy * multiplier
+        target.data.keyframe_insert(data_path="energy", frame=frame)
+    print(
+        f"TIMELINE_CUE=light_flicker:{target.name}:"
+        f"{start_seconds:.3f}:{duration_seconds:.3f}:{len(values)}"
+    )
+
+
+def _apply_light_energy(
+    cue: dict[str, object],
+    *,
+    fps: int,
+    frame_start: int,
+    frame_end: int,
+) -> None:
+    target = _object(str(cue["target_object"]))
+    if target.type != "LIGHT" or target.data is None:
+        raise RuntimeError(f"Timeline target is not a Blender light: {target.name}")
+    values = [float(value) for value in cue.get("values", [])]
+    if len(values) != 1:
+        raise RuntimeError("Light energy cue requires one target multiplier")
+    seconds = float(cue.get("start_seconds", 0.0))
+    frame = _timeline_frame(
+        seconds,
+        fps=fps,
+        frame_start=frame_start,
+        frame_end=frame_end,
+    )
+    target.data.energy = float(target.data.energy) * values[0]
+    target.data.keyframe_insert(data_path="energy", frame=frame)
+    print(f"TIMELINE_CUE=light_energy:{target.name}:{seconds:.3f}:{values[0]:.3f}")
+
+
+def _apply_camera_push(
+    cue: dict[str, object],
+    *,
+    fps: int,
+    frame_start: int,
+    frame_end: int,
+) -> None:
+    camera = _object(str(cue["target_object"]))
+    if camera.type != "CAMERA":
+        raise RuntimeError(f"Timeline target is not a Blender camera: {camera.name}")
+    parameters = dict(cue.get("parameters", {}))
+    focus_name = str(parameters.get("focus_object", ""))
+    focus = _object(focus_name)
+    distance = float(parameters.get("distance", 0.0))
+    if distance <= 0:
+        raise RuntimeError("Camera push distance must be positive")
+
+    start_seconds = float(cue.get("start_seconds", 0.0))
+    duration_seconds = float(cue.get("duration_seconds", 0.0))
+    start_key = _timeline_frame(
+        start_seconds,
+        fps=fps,
+        frame_start=frame_start,
+        frame_end=frame_end,
+    )
+    end_key = _timeline_frame(
+        start_seconds + duration_seconds,
+        fps=fps,
+        frame_start=frame_start,
+        frame_end=frame_end,
+    )
+
+    start_location = camera.location.copy()
+    camera.location = start_location
+    camera.keyframe_insert(data_path="location", frame=start_key)
+    forward = camera.matrix_world.to_quaternion() @ Vector((0.0, 0.0, -1.0))
+    if forward.length < 0.001:
+        raise RuntimeError(f"Camera {camera.name} has no usable forward direction")
+    camera.location = start_location + (forward.normalized() * distance)
+    camera.keyframe_insert(data_path="location", frame=end_key)
+    print(
+        f"TIMELINE_CUE=camera_push:{camera.name}:{focus.name}:"
+        f"{start_seconds:.3f}:{duration_seconds:.3f}:{distance:.3f}"
+    )
+
+
+def _apply_timeline(
+    cues: list[dict[str, object]],
+    *,
+    fps: int,
+    frame_start: int,
+    frame_end: int,
+) -> None:
+    handlers = {
+        "light_flicker": _apply_light_flicker,
+        "light_energy": _apply_light_energy,
+        "camera_push": _apply_camera_push,
+    }
+    for raw_cue in cues:
+        cue = dict(raw_cue)
+        kind = str(cue.get("kind", ""))
+        handler = handlers.get(kind)
+        if handler is None:
+            raise RuntimeError(f"Unsupported Blender timeline cue kind: {kind}")
+        handler(
+            cue,
+            fps=fps,
+            frame_start=frame_start,
+            frame_end=frame_end,
+        )
+    print(f"TIMELINE_CUES_APPLIED={len(cues)}")
+
+
 def _configure_render(manifest: dict[str, object], output: Path) -> tuple[int, int, int]:
     render = dict(manifest["render"])
     scene = bpy.context.scene
@@ -323,6 +465,12 @@ def main() -> None:
     for cue in manifest.get("props", []):
         _configure_prop(dict(cue))
     _configure_camera(dict(manifest["camera"]), frame_start, frame_end)
+    _apply_timeline(
+        [dict(cue) for cue in manifest.get("timeline", [])],
+        fps=fps,
+        frame_start=frame_start,
+        frame_end=frame_end,
+    )
 
     bpy.context.scene.frame_set(frame_start)
     bpy.ops.wm.save_as_mainfile(filepath=str(output_path.with_suffix(".prepared.blend")))
