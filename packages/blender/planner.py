@@ -5,6 +5,7 @@ from packages.blender.models import (
     CameraCue,
     DialogueTrack,
     RenderSettings,
+    TimelineCue,
 )
 from packages.blender.visemes import build_viseme_cues
 from packages.direction.models import ShotPlan
@@ -27,10 +28,12 @@ class BlenderShotPlanner:
         render_engine: str = "BLENDER_EEVEE_NEXT",
         samples: int = 32,
         dialogue_by_order: dict[int, dict[str, object]] | None = None,
+        timeline: list[TimelineCue] | None = None,
     ) -> BlenderShotManifest:
         camera_preset = self._camera_preset(shot.shot_size)
         camera_object = self.registry.camera_object(camera_preset)
         dialogue_by_order = dialogue_by_order or {}
+        timeline = timeline or []
 
         speaker_name, dialogue = self._dialogue_for_shot(shot, dialogue_by_order)
         render_duration = self._render_duration(shot.duration_seconds, dialogue)
@@ -115,6 +118,7 @@ class BlenderShotPlanner:
                 movement=shot.camera_movement,
             ),
             characters=characters,
+            timeline=timeline,
             metadata={
                 "shot_size": shot.shot_size,
                 "camera_angle": shot.camera_angle,
@@ -125,6 +129,7 @@ class BlenderShotPlanner:
                 "direction_duration_seconds": shot.duration_seconds,
                 "render_duration_seconds": render_duration,
                 "camera_target_object": camera_target,
+                "timeline_cue_count": len(timeline),
             },
         )
 
