@@ -10,6 +10,9 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+_TARGET_SAMPLE_RATE = 48000
+_TARGET_CHANNELS = 1
+
 
 def _read_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -88,6 +91,36 @@ def _probe_audio(path: Path, ffprobe_binary: str) -> dict[str, object]:
     }
 
 
+def _normalize_wav(path: Path, ffmpeg_binary: str) -> None:
+    temporary = path.with_name(f"{path.stem}.normalized.wav")
+    temporary.unlink(missing_ok=True)
+    try:
+        subprocess.run(
+            [
+                ffmpeg_binary,
+                "-y",
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-i",
+                str(path),
+                "-ar",
+                str(_TARGET_SAMPLE_RATE),
+                "-ac",
+                str(_TARGET_CHANNELS),
+                "-c:a",
+                "pcm_s16le",
+                str(temporary),
+            ],
+            check=True,
+        )
+        if not temporary.is_file() or temporary.stat().st_size == 0:
+            raise RuntimeError(f"FFmpeg did not create normalized speech: {temporary}")
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def generate(
     screenplay_path: Path,
     characters_path: Path,
@@ -97,6 +130,7 @@ def generate(
     api_key: str,
     model: str,
     timeout_seconds: int,
+    ffmpeg_binary: str,
     ffprobe_binary: str,
     force: bool,
 ) -> dict[str, object]:
@@ -161,7 +195,20 @@ def generate(
                         timeout_seconds=timeout_seconds,
                     )
                 )
+
             probe = _probe_audio(path, ffprobe_binary)
+            normalized = (
+                int(probe["sample_rate"]) != _TARGET_SAMPLE_RATE
+                or int(probe["channels"]) != _TARGET_CHANNELS
+            )
+            if normalized:
+                _normalize_wav(path, ffmpeg_binary)
+                probe = _probe_audio(path, ffprobe_binary)
+            if int(probe["sample_rate"]) != _TARGET_SAMPLE_RATE:
+                raise RuntimeError(f"Speech sample rate was not normalized: {path}")
+            if int(probe["channels"]) != _TARGET_CHANNELS:
+                raise RuntimeError(f"Speech channel count was not normalized: {path}")
+
             lines.append(
                 {
                     "scene_number": scene_number,
@@ -175,13 +222,15 @@ def generate(
                         line.get("estimated_duration_seconds", 0.0)
                     ),
                     "generated": generated,
+                    "normalized": normalized,
                     "file": str(path.resolve()),
                     **probe,
                 }
             )
             print(
                 f"VOICE_LINE_READY=scene:{scene_number}:line:{order}:"
-                f"{speaker}:{probe['duration_seconds']:.3f}s"
+                f"{speaker}:{probe['duration_seconds']:.3f}s:"
+                f"{probe['sample_rate']}Hz:{probe['channels']}ch"
             )
 
     if not lines:
@@ -191,6 +240,8 @@ def generate(
         "provider": "piper-openai-compatible",
         "base_url": base_url,
         "model": model,
+        "target_sample_rate": _TARGET_SAMPLE_RATE,
+        "target_channels": _TARGET_CHANNELS,
         "line_count": len(lines),
         "total_audio_seconds": sum(float(item["duration_seconds"]) for item in lines),
         "lines": lines,
@@ -219,6 +270,7 @@ def main() -> int:
     parser.add_argument("--api-key", default="")
     parser.add_argument("--model", default="piper-arabic")
     parser.add_argument("--timeout-seconds", type=int, default=600)
+    parser.add_argument("--ffmpeg-binary", default="ffmpeg")
     parser.add_argument("--ffprobe-binary", default="ffprobe")
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
@@ -232,6 +284,7 @@ def main() -> int:
             api_key=args.api_key,
             model=args.model,
             timeout_seconds=args.timeout_seconds,
+            ffmpeg_binary=args.ffmpeg_binary,
             ffprobe_binary=args.ffprobe_binary,
             force=args.force,
         )
