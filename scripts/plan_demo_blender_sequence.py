@@ -28,11 +28,11 @@ def plan(
     output_dir: Path,
     *,
     audio_root: Path | None,
-    timeline_overrides_path: Path | None,
     fps: int,
     width: int,
     height: int,
     samples: int,
+    timeline_overrides_path: Path | None = None,
 ) -> list[Path]:
     direction = EpisodeDirection.model_validate_json(direction_path.read_text(encoding="utf-8"))
     screenplay = EpisodeScript.model_validate_json(screenplay_path.read_text(encoding="utf-8"))
@@ -134,13 +134,13 @@ def main() -> int:
             Path(args.registry),
             Path(args.output_dir),
             audio_root=Path(args.audio_root) if args.audio_root else None,
-            timeline_overrides_path=(
-                Path(args.timeline_overrides) if args.timeline_overrides else None
-            ),
             fps=args.fps,
             width=args.width,
             height=args.height,
             samples=args.samples,
+            timeline_overrides_path=(
+                Path(args.timeline_overrides) if args.timeline_overrides else None
+            ),
         )
     except (OSError, ValueError, TypeError, json.JSONDecodeError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
