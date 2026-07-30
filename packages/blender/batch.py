@@ -1,7 +1,7 @@
 import wave
 from pathlib import Path
 
-from packages.blender.models import BlenderSceneRegistry, BlenderShotManifest
+from packages.blender.models import BlenderSceneRegistry, BlenderShotManifest, TimelineCue
 from packages.blender.planner import BlenderShotPlanner
 from packages.direction.models import EpisodeDirection
 from packages.scripts.models import EpisodeScript, ScriptScene
@@ -55,6 +55,7 @@ def build_episode_manifests(
     render_engine: str = "BLENDER_EEVEE_NEXT",
     samples: int = 32,
     audio_root: Path | None = None,
+    timeline_by_shot: dict[str, list[TimelineCue]] | None = None,
 ) -> list[BlenderShotManifest]:
     script_scenes = {scene.number: scene for scene in screenplay.scenes}
     direction_scene_numbers = {scene.scene_number for scene in direction.scenes}
@@ -64,12 +65,14 @@ def build_episode_manifests(
 
     planner = BlenderShotPlanner(registry)
     manifests: list[BlenderShotManifest] = []
+    timeline_by_shot = timeline_by_shot or {}
 
     for directed_scene in direction.scenes:
         script_scene = script_scenes[directed_scene.scene_number]
         dialogue = _dialogue_by_order(script_scene, audio_root=audio_root)
 
         for shot in directed_scene.shots:
+            shot_key = f"scene:{shot.scene_number}:shot:{shot.number}"
             manifest = planner.plan(
                 shot,
                 fps=fps,
@@ -78,6 +81,7 @@ def build_episode_manifests(
                 render_engine=render_engine,
                 samples=samples,
                 dialogue_by_order=dialogue,
+                timeline=timeline_by_shot.get(shot_key, []),
             )
             metadata = {
                 **manifest.metadata,
