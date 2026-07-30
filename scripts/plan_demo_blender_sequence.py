@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from packages.blender.batch import build_episode_manifests
-from packages.blender.models import BlenderSceneRegistry
+from packages.blender.models import BlenderSceneRegistry, ShotTimelineOverrides
 from packages.direction.models import EpisodeDirection
 from packages.scripts.models import EpisodeScript
 
@@ -28,6 +28,7 @@ def plan(
     output_dir: Path,
     *,
     audio_root: Path | None,
+    timeline_overrides_path: Path | None,
     fps: int,
     width: int,
     height: int,
@@ -36,6 +37,12 @@ def plan(
     direction = EpisodeDirection.model_validate_json(direction_path.read_text(encoding="utf-8"))
     screenplay = EpisodeScript.model_validate_json(screenplay_path.read_text(encoding="utf-8"))
     registry = BlenderSceneRegistry.model_validate_json(registry_path.read_text(encoding="utf-8"))
+
+    timeline_overrides = ShotTimelineOverrides()
+    if timeline_overrides_path is not None:
+        timeline_overrides = ShotTimelineOverrides.model_validate_json(
+            timeline_overrides_path.read_text(encoding="utf-8")
+        )
 
     manifests = build_episode_manifests(
         direction,
@@ -46,6 +53,7 @@ def plan(
         height=height,
         samples=samples,
         audio_root=audio_root,
+        timeline_by_shot=timeline_overrides.shots,
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -65,6 +73,7 @@ def plan(
                 "shot_number": manifest.shot_number,
                 "shot_key": manifest.shot_key,
                 "duration_seconds": manifest.render.duration_seconds,
+                "timeline_cue_count": len(manifest.timeline),
                 "manifest": path.name,
                 "output": f"{stem}.mp4",
             }
@@ -78,6 +87,11 @@ def plan(
             "shot_count": len(index_items),
             "total_duration_seconds": sum(
                 float(item["duration_seconds"]) for item in index_items
+            ),
+            "timeline_override_source": (
+                str(timeline_overrides_path.resolve())
+                if timeline_overrides_path is not None
+                else ""
             ),
             "items": index_items,
         },
@@ -101,6 +115,10 @@ def main() -> int:
         "--registry",
         default="demo/first-real-episode/blender/scene_registry.json",
     )
+    parser.add_argument(
+        "--timeline-overrides",
+        default="demo/first-real-episode/golden-scene/timeline.json",
+    )
     parser.add_argument("--output-dir", default="output/blender/manifests")
     parser.add_argument("--audio-root", default="")
     parser.add_argument("--fps", type=int, default=24)
@@ -116,6 +134,9 @@ def main() -> int:
             Path(args.registry),
             Path(args.output_dir),
             audio_root=Path(args.audio_root) if args.audio_root else None,
+            timeline_overrides_path=(
+                Path(args.timeline_overrides) if args.timeline_overrides else None
+            ),
             fps=args.fps,
             width=args.width,
             height=args.height,
