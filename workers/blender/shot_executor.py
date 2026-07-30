@@ -382,6 +382,63 @@ def _apply_camera_push(
     )
 
 
+def _apply_character_look(
+    cue: dict[str, object],
+    *,
+    fps: int,
+    frame_start: int,
+    frame_end: int,
+) -> None:
+    character = _object(str(cue["target_object"]))
+    if character.type != "ARMATURE":
+        raise RuntimeError(
+            f"Timeline character-look target is not an armature: {character.name}"
+        )
+    parameters = dict(cue.get("parameters", {}))
+    focus_name = str(parameters.get("focus_object", ""))
+    focus = _object(focus_name)
+    max_yaw_degrees = float(parameters.get("max_yaw_degrees", 65.0))
+    if max_yaw_degrees <= 0 or max_yaw_degrees > 120:
+        raise RuntimeError("Character look max_yaw_degrees must remain between 0 and 120")
+
+    start_seconds = float(cue.get("start_seconds", 0.0))
+    duration_seconds = float(cue.get("duration_seconds", 0.0))
+    start_key = _timeline_frame(
+        start_seconds,
+        fps=fps,
+        frame_start=frame_start,
+        frame_end=frame_end,
+    )
+    end_key = _timeline_frame(
+        start_seconds + duration_seconds,
+        fps=fps,
+        frame_start=frame_start,
+        frame_end=frame_end,
+    )
+
+    start_yaw = float(character.rotation_euler.z)
+    character.rotation_euler.z = start_yaw
+    character.keyframe_insert(data_path="rotation_euler", frame=start_key, index=2)
+
+    direction = focus.matrix_world.translation - character.matrix_world.translation
+    direction.z = 0.0
+    if direction.length < 0.001:
+        raise RuntimeError(
+            f"Character {character.name} cannot look toward coincident target {focus.name}"
+        )
+    desired_yaw = direction.to_track_quat("-Y", "Z").to_euler().z
+    delta = (desired_yaw - start_yaw + math.pi) % (2 * math.pi) - math.pi
+    max_yaw = math.radians(max_yaw_degrees)
+    clamped_delta = max(-max_yaw, min(max_yaw, delta))
+    character.rotation_euler.z = start_yaw + clamped_delta
+    character.keyframe_insert(data_path="rotation_euler", frame=end_key, index=2)
+    print(
+        f"TIMELINE_CUE=character_look:{character.name}:{focus.name}:"
+        f"{start_seconds:.3f}:{duration_seconds:.3f}:"
+        f"{math.degrees(clamped_delta):.3f}"
+    )
+
+
 def _apply_timeline(
     cues: list[dict[str, object]],
     *,
@@ -393,6 +450,7 @@ def _apply_timeline(
         "light_flicker": _apply_light_flicker,
         "light_energy": _apply_light_energy,
         "camera_push": _apply_camera_push,
+        "character_look": _apply_character_look,
     }
     for raw_cue in cues:
         cue = dict(raw_cue)
