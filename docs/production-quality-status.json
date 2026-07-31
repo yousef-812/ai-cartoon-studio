@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "updated_at": "2026-07-31",
+  "active_branch": "agent/series-bible-foundation",
+  "pull_request": 1,
+  "pull_request_state": "draft",
+  "automatic_merge": false,
+  "golden_scene": {
+    "scene_key": "golden-scene:storm-lamp-opening",
+    "production_approved": false,
+    "promotion_policy": "blocked_until_explicit_human_approval",
+    "latest_completed_review": "demo/first-real-episode/golden-scene/reviews/iteration-001.json",
+    "next_review_artifacts": [
+      "output/golden-scene/contact-sheet.png",
+      "output/golden-scene/review.json"
+    ]
+  },
+  "milestones": {
+    "M0": {
+      "status": "in_progress",
+      "completed": [
+        "golden_scene_spec",
+        "structured_review_questions",
+        "media_probe",
+        "sha256_record",
+        "contact_sheet_generator",
+        "promotion_block_default"
+      ],
+      "remaining": [
+        "real_lightning_review_artifact_validation",
+        "explicit_human_approval_workflow"
+      ]
+    },
+    "M1": {
+      "status": "in_progress",
+      "completed": [
+        "timed_cue_schema",
+        "light_flicker",
+        "light_energy",
+        "camera_push",
+        "character_look",
+        "permanent_focus_anchors",
+        "authored_performance_overrides"
+      ],
+      "remaining": [
+        "real_blender_validation_of_latest_batch",
+        "layered_action_segments"
+      ]
+    },
+    "M2": {
+      "status": "in_progress",
+      "completed": [
+        "storm_night_palette",
+        "lamp_failure_flicker",
+        "lightning_flash",
+        "motivated_camera_push",
+        "window_lantern_speaking_eye_line",
+        "reusable_rain_assets"
+      ],
+      "remaining": [
+        "visual_exposure_review",
+        "rain_motion_timeline",
+        "safe_framing_qc"
+      ]
+    },
+    "M3": {
+      "status": "in_progress",
+      "completed": [
+        "procedural_face_upgrade",
+        "white_eyes_irises_pupils",
+        "brows_eyelids_nose_ears",
+        "omar_round_glasses",
+        "nader_hood_silhouette",
+        "less_blocky_proportions",
+        "quality_scene_validation"
+      ],
+      "remaining": [
+        "real_render_review",
+        "final_artist_authored_meshes",
+        "production_topology_and_deformation"
+      ]
+    },
+    "M4": {
+      "status": "planned",
+      "completed": [
+        "static_brow_and_eyelid_geometry"
+      ],
+      "remaining": [
+        "facial_shape_keys",
+        "blink_system",
+        "forced_alignment",
+        "expression_timeline"
+      ]
+    },
+    "M5": {
+      "status": "in_progress",
+      "completed": [
+        "authored_surprise",
+        "authored_worry",
+        "light_out_reaction",
+        "concerned_settle",
+        "golden_scene_action_assignment"
+      ],
+      "remaining": [
+        "nla_layering",
+        "transition_blending",
+        "prop_hand_constraints"
+      ]
+    },
+    "M6": {
+      "status": "in_progress",
+      "completed": [
+        "permanent_voice_profiles",
+        "independent_voice_lines",
+        "48khz_mono_normalization",
+        "dialogue_retiming_for_visual_preparation"
+      ],
+      "remaining": [
+        "higher_quality_arabic_provider_evaluation",
+        "forced_alignment",
+        "acting_direction_review"
+      ]
+    },
+    "M7": {
+      "status": "in_progress",
+      "completed": [
+        "deterministic_rain_ambience",
+        "deterministic_flicker_effect",
+        "deterministic_thunder_effect",
+        "production_ffmpeg_mixer_integration",
+        "loudness_normalization"
+      ],
+      "remaining": [
+        "real_mix_review",
+        "room_tone",
+        "music_state_system"
+      ]
+    },
+    "M8": {
+      "status": "blocked",
+      "blocked_by": ["M2", "M3", "M4", "M5", "M6", "M7"]
+    },
+    "M9": {
+      "status": "blocked",
+      "blocked_by": ["M8"]
+    },
+    "M10": {
+      "status": "in_progress",
+      "completed": [
+        "media_stream_checks",
+        "duration_check",
+        "resolution_check",
+        "sample_rate_check",
+        "channel_check",
+        "promotion_block"
+      ],
+      "remaining": [
+        "subject_in_frame_qc",
+        "face_visibility_qc",
+        "eye_line_qc",
+        "static_pose_detection",
+        "exposure_qc"
+      ]
+    },
+    "M11": {
+      "status": "planned"
+    }
+  },
+  "one_command_pipeline": "scripts/run_demo_voiced_blender_preview.sh",
+  "latest_update": "docs/production-quality-updates/2026-07-31-golden-scene-quality-upgrade.md"
+}
