@@ -8,7 +8,6 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from quality_actions import upgrade as upgrade_actions
-from quality_common import parent_to_bone
 from quality_cube import cube, upgrade_nader_face
 from quality_environment import upgrade as upgrade_environment
 from quality_meshes import sphere, upgrade_omar_face
