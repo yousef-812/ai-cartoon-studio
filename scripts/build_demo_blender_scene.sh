@@ -20,6 +20,10 @@ fi
 
 "$BLENDER_BINARY" \
   --background "$OUTPUT_PATH" \
+  --python workers/blender/upgrade_workshop_quality.py
+
+"$BLENDER_BINARY" \
+  --background "$OUTPUT_PATH" \
   --python workers/blender/validate_scene.py
 
 printf 'Workshop scene ready: %s (%s bytes)\n' "$OUTPUT_PATH" "$(stat -c%s "$OUTPUT_PATH")"
