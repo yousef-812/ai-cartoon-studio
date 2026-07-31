@@ -27,6 +27,7 @@ bash -n \
   scripts/generate_demo_voice_lines.py \
   scripts/generate_golden_scene_sound.py \
   scripts/mix_golden_scene_audio.py \
+  scripts/build_golden_scene_review.py \
   scripts/apply_golden_scene_performance.py \
   scripts/plan_demo_blender_sequence.py \
   workers/blender
@@ -40,7 +41,6 @@ piper_ready() {
 import json
 import sys
 import urllib.request
-
 base = sys.argv[1].rstrip("/")
 with urllib.request.urlopen(f"{base}/health", timeout=5) as response:
     payload = json.loads(response.read().decode("utf-8"))
@@ -117,7 +117,14 @@ if [[ "$AUDIO_STREAMS" -lt 1 ]]; then
   exit 1
 fi
 
+"$PYTHON_BINARY" scripts/build_golden_scene_review.py
+
 printf '\nVOICED_BLENDER_PREVIEW_SUCCEEDED=%s\n' "$PWD/output/blender/sequence_preview.mp4"
 printf 'Generated voice lines: %s\n' "$(find "$VOICE_OUTPUT_DIR" -maxdepth 1 -type f -name 'scene_*_line_*.wav' | wc -l)"
 printf 'Preview audio streams: %s\n' "$AUDIO_STREAMS"
-ls -lh output/blender/sequence_preview.mp4 output/blender/sequence_preview_report.json "$VOICE_OUTPUT_DIR/voice_report.json"
+ls -lh \
+  output/blender/sequence_preview.mp4 \
+  output/blender/sequence_preview_report.json \
+  output/golden-scene/contact-sheet.png \
+  output/golden-scene/review.json \
+  "$VOICE_OUTPUT_DIR/voice_report.json"
