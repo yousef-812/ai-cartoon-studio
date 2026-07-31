@@ -1,12 +1,21 @@
 name: Quality Checks
 
 on:
-  push:
+  workflow_dispatch:
   pull_request:
+    types: [ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   api:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: apps/api
@@ -15,12 +24,75 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
+          cache-dependency-path: apps/api/pyproject.toml
       - run: pip install -e ".[dev]"
-      - run: ruff check . ../../packages
-      - run: pytest
+      - name: Run Ruff
+        id: ruff
+        run: |
+          set +e
+          ruff check . ../../packages ../../scripts ../../workers \
+            --output-format=json > ruff-report.json
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Upload Ruff report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruff-report
+          path: apps/api/ruff-report.json
+          if-no-files-found: error
+      - name: Fail on Ruff findings
+        if: steps.ruff.outputs.status != '0'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          findings = json.loads(Path("ruff-report.json").read_text(encoding="utf-8"))
+          for item in findings:
+              location = item["location"]
+              print(
+                  f"{item['filename']}:{location['row']}:{location['column']}: "
+                  f"{item['code']} {item['message']}"
+              )
+          raise SystemExit(1)
+          PY
+      - run: python -m compileall ../../scripts ../../workers
+      - run: bash -n ../../scripts/*.sh
+      - name: Run pytest
+        id: pytest
+        run: |
+          set +e
+          pytest -q --tb=short > pytest-report.txt 2>&1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Upload pytest report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: apps/api/pytest-report.txt
+          if-no-files-found: error
+      - name: Fail on pytest findings
+        if: steps.pytest.outputs.status != '0'
+        run: |
+          cat pytest-report.txt
+          exit 1
+      - name: Validate demo Compose configuration
+        working-directory: ${{ github.workspace }}
+        run: |
+          cp .env.demo.example .env
+          docker compose -f docker-compose.yml -f docker-compose.demo.yml config -q
+      - name: Build the production API image
+        working-directory: ${{ github.workspace }}
+        run: docker build -f apps/api/Dockerfile .
 
   web:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: apps/web
@@ -28,6 +100,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - run: npm install
       - run: npm run build

@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "scene_number": 1,
+  "shot_number": 1,
+  "shot_key": "scene:1:shot:1:blender-smoke",
+  "render": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "duration_seconds": 4.0,
+    "engine": "BLENDER_EEVEE_NEXT",
+    "samples": 32,
+    "transparent_background": false
+  },
+  "camera": {
+    "preset": "wide",
+    "object_name": "CAM_Wide",
+    "look_at_object": "ANCHOR_Workbench_Center",
+    "movement": "locked"
+  },
+  "characters": [
+    {
+      "name": "عمر",
+      "rig_object": "Omar_Rig",
+      "mouth_object": "Omar_Mouth",
+      "head_bone": "head",
+      "anchor_object": "ANCHOR_Omar_Left",
+      "action_name": "Omar_Talk",
+      "emotion": "focused and reassuring",
+      "look_at_object": "Nader_Rig",
+      "dialogue": {
+        "speaker": "عمر",
+        "text": "المشكلة مش في البطارية.",
+        "audio_path": "",
+        "start_seconds": 0.25,
+        "duration_seconds": 3.2,
+        "visemes": [
+          {"time_seconds": 0.25, "name": "REST", "weight": 0.0},
+          {"time_seconds": 0.42, "name": "A", "weight": 1.0},
+          {"time_seconds": 0.72, "name": "L", "weight": 1.0},
+          {"time_seconds": 1.02, "name": "M", "weight": 1.0},
+          {"time_seconds": 1.36, "name": "S", "weight": 1.0},
+          {"time_seconds": 1.72, "name": "L", "weight": 1.0},
+          {"time_seconds": 2.05, "name": "F", "weight": 1.0},
+          {"time_seconds": 2.38, "name": "A", "weight": 1.0},
+          {"time_seconds": 2.72, "name": "M", "weight": 1.0},
+          {"time_seconds": 3.1, "name": "A", "weight": 1.0},
+          {"time_seconds": 3.45, "name": "REST", "weight": 0.0}
+        ]
+      }
+    },
+    {
+      "name": "نادر",
+      "rig_object": "Nader_Rig",
+      "mouth_object": "Nader_Mouth",
+      "head_bone": "head",
+      "anchor_object": "ANCHOR_Nader_Right",
+      "action_name": "Nader_Listen",
+      "emotion": "curious attention",
+      "look_at_object": "Omar_Rig"
+    }
+  ],
+  "props": [
+    {
+      "name": "lantern",
+      "object_name": "PROP_Lantern",
+      "visible": true
+    }
+  ],
+  "metadata": {
+    "purpose": "first reusable Blender workshop smoke test",
+    "acceptance": [
+      "one unchanged environment",
+      "two persistent rigged characters",
+      "body actions from reusable action clips",
+      "eye-line interaction",
+      "mouth motion from viseme cues",
+      "single camera and lighting setup"
+    ]
+  }
+}

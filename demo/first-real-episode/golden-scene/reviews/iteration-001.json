@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "iteration": 1,
+  "reviewed_at": "2026-07-30",
+  "scene_key": "golden-scene:storm-lamp-opening",
+  "source_commit": "c42bd562e3748034b029cb5a68dbb51aad93808d",
+  "decision": "visual_revision_required",
+  "technical_status": "passed",
+  "production_approved": false,
+  "media": {
+    "selected_shots": 2,
+    "planned_shots": 10,
+    "expected_duration_seconds": 8.0,
+    "actual_duration_seconds": 8.042333,
+    "width": 1280,
+    "height": 720,
+    "fps": 24.0,
+    "has_audio": true,
+    "audio_codec": "aac",
+    "audio_sample_rate": 48000,
+    "audio_channels": 2,
+    "duration_checks_passed": true
+  },
+  "passed_observations": [
+    "The workshop-light flicker is visibly present.",
+    "The emergency-lamp light reaches a failed/off state.",
+    "The camera push executes without empty framing.",
+    "Both selected MP4 shots contain valid video and audio streams.",
+    "Shot durations remain within the preview tolerance.",
+    "Both characters remain visible and readable in the first shot.",
+    "Nader remains centered and readable in the second shot."
+  ],
+  "blocking_observations": [
+    "Nader does not visibly look toward the storm window and then return attention to the failed lamp.",
+    "Omar does not have a convincing authored reaction and settle beat after the light failure.",
+    "Character acting remains dominated by generic Talk and Listen actions.",
+    "No rain ambience, thunder timing, room tone, or lamp-failure sound design is present.",
+    "Placeholder character art is not suitable for production approval."
+  ],
+  "review_questions": {
+    "light_failure_clear": true,
+    "shared_event_reaction_clear": false,
+    "camera_moves_motivated": true,
+    "dialogue_emotion_convincing": false,
+    "scene_alive_during_pauses": false,
+    "reviewer_would_continue_watching": false
+  },
+  "required_next_actions": [
+    "Add deterministic character-look cues for Nader: window, lamp, speaking direction.",
+    "Add an authored Omar reaction and settle beat.",
+    "Re-render only Scene 1 Shots 1 and 2.",
+    "Keep the Golden Scene approval state pending."
+  ],
+  "notes": "This iteration proves the first timed lighting and camera cues in a real Blender render, but it remains previs and is rejected as an entertainment-quality scene."
+}

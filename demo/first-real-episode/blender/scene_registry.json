@@ -1,0 +1,66 @@
+{
+  "version": 2,
+  "scene_name": "WorkshopOfLight",
+  "characters": {
+    "عمر": {
+      "rig_object": "Omar_Rig",
+      "mouth_object": "Omar_Mouth",
+      "head_bone": "head",
+      "anchors": {
+        "left": "ANCHOR_Omar_Left",
+        "center": "ANCHOR_Omar_Center",
+        "workbench_left": "ANCHOR_Omar_Left",
+        "workbench_center": "ANCHOR_Omar_Center"
+      },
+      "actions": {
+        "idle": "Omar_Idle",
+        "talk": "Omar_Talk",
+        "listen": "Omar_Listen",
+        "point": "Omar_Point",
+        "pick_up": "Omar_PickUp",
+        "walk": "Omar_Walk",
+        "surprised": "Omar_Surprised",
+        "worried": "Omar_Worried",
+        "react_light_out": "Omar_ReactLightOut",
+        "concern_settle": "Omar_ConcernSettle"
+      },
+      "default_anchor": "ANCHOR_Omar_Left"
+    },
+    "نادر": {
+      "rig_object": "Nader_Rig",
+      "mouth_object": "Nader_Mouth",
+      "head_bone": "head",
+      "anchors": {
+        "right": "ANCHOR_Nader_Right",
+        "center": "ANCHOR_Nader_Center",
+        "workbench_right": "ANCHOR_Nader_Right",
+        "workbench_center": "ANCHOR_Nader_Center"
+      },
+      "actions": {
+        "idle": "Nader_Idle",
+        "talk": "Nader_Talk",
+        "listen": "Nader_Listen",
+        "point": "Nader_Point",
+        "pick_up": "Nader_PickUp",
+        "walk": "Nader_Walk",
+        "surprised": "Nader_Surprised",
+        "worried": "Nader_Worried",
+        "react_light_out": "Nader_ReactLightOut",
+        "concern_settle": "Nader_ConcernSettle"
+      },
+      "default_anchor": "ANCHOR_Nader_Right"
+    }
+  },
+  "cameras": {
+    "wide": "CAM_Wide",
+    "medium": "CAM_Medium",
+    "close": "CAM_Close"
+  },
+  "props": {
+    "lantern": "PROP_Lantern",
+    "screwdriver": "PROP_Screwdriver",
+    "window_focus": "ANCHOR_Window_Focus",
+    "lantern_focus": "ANCHOR_Lantern_Focus"
+  },
+  "default_camera": "wide"
+}

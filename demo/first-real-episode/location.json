@@ -1,0 +1,12 @@
+{
+  "name": "الورشة الرئيسية",
+  "description": "ورشة صغيرة دافئة في الطابق الأرضي، فيها منضدة خشبية عريضة ورفوف أدوات ونافذة كبيرة يظهر خلفها مطر خفيف. التصميم مرتب بما يكفي للحفاظ على استمرارية الخلفية بين اللقطات.",
+  "visual_prompt": "Original stylized 3D animated inventor workshop interior, one wide wooden workbench centered in foreground, pegboard tools on back wall, shelves with simple handmade devices, one large window on camera-left showing a cool blue rainstorm, warm amber desk lamp, cream metal emergency lantern with teal handle on the bench, cinematic family-friendly lighting, production-efficient layout, no people, no text, no logo, 16:9",
+  "rules": [
+    "The large rain window always remains on camera-left.",
+    "The main workbench remains centered and faces the camera.",
+    "The cream emergency lantern stays on the workbench until the final shot.",
+    "Do not add new rooms, doors, crowds, or branded tools.",
+    "Use the same warm amber and cool storm-blue lighting relationship in every shot."
+  ]
+}

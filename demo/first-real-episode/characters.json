@@ -1,0 +1,58 @@
+[
+  {
+    "name": "عمر",
+    "role": "protagonist",
+    "age_range": "18-22",
+    "description": "مخترع شاب هادئ وسريع الملاحظة، يحب إصلاح الأشياء بدل التخلص منها، ويتحمل المسؤولية عندما تتعقد التجربة.",
+    "personality_traits": ["هادئ", "دقيق", "متعاون", "متفائل تحت الضغط"],
+    "visual_identity": {
+      "reference_prompt": "Original stylized 3D animated young Arab inventor named Omar, age 20, warm medium-brown skin, short curly black hair, round dark-framed glasses, expressive dark brown eyes, slim build, teal work jacket over cream shirt, dark work trousers, brown boots, family-friendly cinematic animation, clean readable face, front three-quarter view, full body, neutral studio background, no text, no logo",
+      "body_shape": "slim young adult with relaxed shoulders and clear readable gestures",
+      "face": "oval face, warm medium-brown skin, dark brown eyes, round dark-framed glasses, calm friendly expression",
+      "hair": "short dense curly black hair with a clean silhouette",
+      "palette": ["deep teal", "cream", "dark brown", "warm skin tones"],
+      "signature_features": ["round glasses", "teal work jacket", "small brass screwdriver in chest pocket"]
+    },
+    "wardrobe": {
+      "default": "teal work jacket, cream shirt, dark trousers, brown boots",
+      "episode_1": "same default wardrobe with sleeves rolled once"
+    },
+    "speaking_style": "جمل عربية فصحى قصيرة وواضحة، نبرة هادئة، يشرح الفكرة في كلمات قليلة ولا يصرخ.",
+    "voice_profile": {
+      "provider": "piper-demo",
+      "voice_id": "ar_JO-kareem-medium",
+      "language": "ar",
+      "description": "صوت شاب عربي هادئ وواضح",
+      "speed": 0.95,
+      "pitch": 0.92
+    }
+  },
+  {
+    "name": "نادر",
+    "role": "deuteragonist",
+    "age_range": "14-17",
+    "description": "متدرب فضولي ومتحمس، يلاحظ التفاصيل الصغيرة ويخفف التوتر بتعليقاته السريعة، لكنه يتعلم ألا يتصرف قبل التفكير.",
+    "personality_traits": ["فضولي", "مرح", "سريع", "شجاع"],
+    "visual_identity": {
+      "reference_prompt": "Original stylized 3D animated Arab teenage workshop apprentice named Nader, age 16, olive skin, straight dark hair swept to one side, expressive hazel eyes, youthful round face, compact build, muted orange hoodie under a navy workshop apron, dark sneakers, family-friendly cinematic animation, clean readable face, front three-quarter view, full body, neutral studio background, no text, no logo",
+      "body_shape": "compact teenage build with energetic posture and simple readable gestures",
+      "face": "youthful round face, olive skin, hazel eyes, bright curious expression",
+      "hair": "straight dark hair swept to one side with a simple silhouette",
+      "palette": ["muted orange", "navy", "charcoal", "olive skin tones"],
+      "signature_features": ["orange hoodie", "navy apron", "small pencil behind right ear"]
+    },
+    "wardrobe": {
+      "default": "muted orange hoodie, navy apron, charcoal trousers, dark sneakers",
+      "episode_1": "same default wardrobe with pencil behind right ear"
+    },
+    "speaking_style": "جمل عربية فصحى قصيرة وحماسية، يتكلم أسرع قليلًا من عمر ويستخدم تعليقات مرحة بسيطة.",
+    "voice_profile": {
+      "provider": "piper-demo",
+      "voice_id": "ar_JO-kareem-medium",
+      "language": "ar",
+      "description": "صوت مراهق عربي أعلى قليلًا وأكثر حماسًا",
+      "speed": 1.12,
+      "pitch": 1.18
+    }
+  }
+]

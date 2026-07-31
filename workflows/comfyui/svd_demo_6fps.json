@@ -1,0 +1,82 @@
+{
+  "workflow": {
+    "1": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "animation-input.png"
+      }
+    },
+    "2": {
+      "class_type": "ImageOnlyCheckpointLoader",
+      "inputs": {
+        "ckpt_name": "svd_xt_1_1.safetensors"
+      }
+    },
+    "3": {
+      "class_type": "SVD_img2vid_Conditioning",
+      "inputs": {
+        "clip_vision": ["2", 1],
+        "init_image": ["1", 0],
+        "vae": ["2", 2],
+        "width": 1024,
+        "height": 576,
+        "video_frames": 24,
+        "motion_bucket_id": 127,
+        "fps": 6,
+        "augmentation_level": 0.04
+      }
+    },
+    "4": {
+      "class_type": "VideoLinearCFGGuidance",
+      "inputs": {
+        "model": ["2", 0],
+        "min_cfg": 1.0
+      }
+    },
+    "5": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": ["4", 0],
+        "seed": -1,
+        "steps": 22,
+        "cfg": 2.5,
+        "sampler_name": "euler",
+        "scheduler": "karras",
+        "positive": ["3", 0],
+        "negative": ["3", 1],
+        "latent_image": ["3", 2],
+        "denoise": 1.0
+      }
+    },
+    "6": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": ["5", 0],
+        "vae": ["2", 2]
+      }
+    },
+    "7": {
+      "class_type": "VHS_VideoCombine",
+      "inputs": {
+        "images": ["6", 0],
+        "frame_rate": 6,
+        "loop_count": 0,
+        "filename_prefix": "ai-cartoon-studio/demo-animated-shot",
+        "format": "video/h264-mp4",
+        "pingpong": false,
+        "save_output": true
+      }
+    }
+  },
+  "bindings": {
+    "input_image": {"node_id": "1", "input_name": "image"},
+    "width": {"node_id": "3", "input_name": "width"},
+    "height": {"node_id": "3", "input_name": "height"},
+    "frames": {"node_id": "3", "input_name": "video_frames"},
+    "fps": {"node_id": "3", "input_name": "fps"},
+    "motion_strength": {"node_id": "3", "input_name": "augmentation_level"},
+    "seed": {"node_id": "5", "input_name": "seed"},
+    "steps": {"node_id": "5", "input_name": "steps"},
+    "guidance_scale": {"node_id": "5", "input_name": "cfg"}
+  }
+}

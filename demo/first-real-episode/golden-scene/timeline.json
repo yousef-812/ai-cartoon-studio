@@ -1,0 +1,137 @@
+{
+  "version": 2,
+  "shots": {
+    "scene:1:shot:1": [
+      {
+        "kind": "light_flicker",
+        "target_object": "LIGHT_Key",
+        "start_seconds": 0.0,
+        "duration_seconds": 0.9,
+        "values": [1.0, 0.22, 1.15, 0.08, 0.48],
+        "parameters": {}
+      },
+      {
+        "kind": "light_flicker",
+        "target_object": "LIGHT_Fill",
+        "start_seconds": 0.0,
+        "duration_seconds": 0.9,
+        "values": [1.0, 0.45, 1.25, 0.18, 0.62],
+        "parameters": {}
+      },
+      {
+        "kind": "light_flicker",
+        "target_object": "LIGHT_Lantern",
+        "start_seconds": 0.05,
+        "duration_seconds": 0.8,
+        "values": [1.0, 0.15, 0.9, 0.05, 0.0],
+        "parameters": {}
+      },
+      {
+        "kind": "character_look",
+        "target_object": "Omar_Rig",
+        "start_seconds": 0.12,
+        "duration_seconds": 0.34,
+        "values": [],
+        "parameters": {
+          "focus_object": "ANCHOR_Lantern_Focus",
+          "max_yaw_degrees": 42.0
+        }
+      },
+      {
+        "kind": "character_look",
+        "target_object": "Nader_Rig",
+        "start_seconds": 0.18,
+        "duration_seconds": 0.38,
+        "values": [],
+        "parameters": {
+          "focus_object": "ANCHOR_Lantern_Focus",
+          "max_yaw_degrees": 48.0
+        }
+      },
+      {
+        "kind": "character_look",
+        "target_object": "Omar_Rig",
+        "start_seconds": 0.72,
+        "duration_seconds": 0.28,
+        "values": [],
+        "parameters": {
+          "focus_object": "CAM_Medium",
+          "max_yaw_degrees": 30.0
+        }
+      },
+      {
+        "kind": "camera_push",
+        "target_object": "CAM_Medium",
+        "start_seconds": 0.55,
+        "duration_seconds": 1.8,
+        "values": [],
+        "parameters": {
+          "focus_object": "ANCHOR_Workbench_Center",
+          "distance": 0.32
+        }
+      }
+    ],
+    "scene:1:shot:2": [
+      {
+        "kind": "light_energy",
+        "target_object": "LIGHT_Key",
+        "start_seconds": 0.0,
+        "duration_seconds": 0.0,
+        "values": [0.52],
+        "parameters": {}
+      },
+      {
+        "kind": "light_flicker",
+        "target_object": "LIGHT_Fill",
+        "start_seconds": 0.18,
+        "duration_seconds": 0.38,
+        "values": [0.7, 2.15, 0.35, 0.75],
+        "parameters": {}
+      },
+      {
+        "kind": "character_look",
+        "target_object": "Nader_Rig",
+        "start_seconds": 0.05,
+        "duration_seconds": 0.35,
+        "values": [],
+        "parameters": {
+          "focus_object": "ANCHOR_Window_Focus",
+          "max_yaw_degrees": 55.0
+        }
+      },
+      {
+        "kind": "character_look",
+        "target_object": "Nader_Rig",
+        "start_seconds": 0.62,
+        "duration_seconds": 0.42,
+        "values": [],
+        "parameters": {
+          "focus_object": "ANCHOR_Lantern_Focus",
+          "max_yaw_degrees": 70.0
+        }
+      },
+      {
+        "kind": "character_look",
+        "target_object": "Nader_Rig",
+        "start_seconds": 1.12,
+        "duration_seconds": 0.34,
+        "values": [],
+        "parameters": {
+          "focus_object": "CAM_Medium",
+          "max_yaw_degrees": 35.0
+        }
+      },
+      {
+        "kind": "camera_push",
+        "target_object": "CAM_Medium",
+        "start_seconds": 0.75,
+        "duration_seconds": 2.1,
+        "values": [],
+        "parameters": {
+          "focus_object": "ANCHOR_Nader_Right",
+          "distance": 0.2
+        }
+      }
+    ]
+  }
+}
