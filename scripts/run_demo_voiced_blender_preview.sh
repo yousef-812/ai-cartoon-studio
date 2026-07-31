@@ -14,6 +14,7 @@ QUALITY_SCENE_REBUILD="${QUALITY_SCENE_REBUILD:-1}"
 GOLDEN_SOUND="${GOLDEN_SOUND:-1}"
 
 mkdir -p "$PWD/logs" "$VOICE_OUTPUT_DIR" "$PWD/output/golden-scene/sound"
+rm -f "$PWD/output/golden-scene/contact-sheet.png" "$PWD/output/golden-scene/review.json"
 
 bash -n \
   scripts/setup_demo_piper.sh \
