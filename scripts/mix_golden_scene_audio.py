@@ -63,3 +63,14 @@ def mix_one(video, rain, effect, scene, shot, duration, start, text):
     rendered = FFmpegSoundMixer().mix(make_spec(video, scene, shot, duration, planned), sources)
     video.write_bytes(rendered.content)
     print("GOLDEN_AUDIO_MIXED=" + str(video.resolve()))
+
+
+def main():
+    sequence = Path("output/blender/sequence")
+    sound = Path("output/golden-scene/sound")
+    mix_one(sequence / "scene_01_shot_01.mp4", sound / "rain.wav", sound / "flicker.wav", 1, 1, 3.2, 0.0, "lamp flicker and electrical failure")
+    mix_one(sequence / "scene_01_shot_02.mp4", sound / "rain.wav", sound / "thunder.wav", 1, 2, 4.8, 0.43, "distant thunder after lightning")
+
+
+if __name__ == "__main__":
+    main()
