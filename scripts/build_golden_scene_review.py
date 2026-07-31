@@ -73,3 +73,29 @@ def _report(video, contact_sheet, probe):
             ],
         },
     }
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--video", default="output/blender/sequence_preview.mp4")
+    parser.add_argument("--output-dir", default="output/golden-scene")
+    args = parser.parse_args()
+    video = Path(args.video)
+    root = Path(args.output_dir)
+    if not video.is_file():
+        raise SystemExit(f"Golden Scene preview is missing: {video}")
+    root.mkdir(parents=True, exist_ok=True)
+    contact = root / "contact-sheet.png"
+    review = root / "review.json"
+    _contact_sheet(video, contact)
+    payload = _report(video, contact, _probe(video))
+    review.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    if payload["status"] == "technical_failure":
+        raise SystemExit("GOLDEN_SCENE_TECHNICAL_REVIEW_FAILED")
+    print("GOLDEN_SCENE_CONTACT_SHEET=" + str(contact.resolve()))
+    print("GOLDEN_SCENE_REVIEW=" + str(review.resolve()))
+    print("GOLDEN_SCENE_PROMOTION_BLOCKED=pending_human_review")
+
+
+if __name__ == "__main__":
+    main()
