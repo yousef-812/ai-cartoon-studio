@@ -11,10 +11,12 @@ def _key(rig, bone, frame, rotation):
 
 
 def _action(name, rig, keys):
-    old = bpy.data.actions.get(name)
-    if old is not None:
-        bpy.data.actions.remove(old)
-    action = bpy.data.actions.new(name)
+    action = bpy.data.actions.get(name)
+    if action is None:
+        action = bpy.data.actions.new(name)
+    else:
+        for curve in list(action.fcurves):
+            action.fcurves.remove(curve)
     action.use_fake_user = True
     rig.animation_data_create()
     rig.animation_data.action = action
