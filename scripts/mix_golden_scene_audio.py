@@ -17,3 +17,14 @@ def asset(key, kind, path):
         prompt=key,
         storage_path=str(path),
     )
+
+
+def rain_cue(scene, shot, duration):
+    return SoundCueSpec(
+        key=f"scene:{scene}:shot:{shot}:rain",
+        kind=SoundCueKind.AMBIENCE,
+        prompt="steady storm rain outside workshop window",
+        duration_seconds=duration,
+        gain_db=-18,
+        loop=True,
+    )
