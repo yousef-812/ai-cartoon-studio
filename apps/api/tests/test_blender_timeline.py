@@ -49,6 +49,9 @@ def test_golden_scene_timeline_is_injected_by_shot_key() -> None:
         "light_flicker",
         "light_flicker",
         "light_flicker",
+        "character_look",
+        "character_look",
+        "character_look",
         "camera_push",
     ]
     assert [cue.kind for cue in manifests[1].timeline] == [
@@ -60,7 +63,7 @@ def test_golden_scene_timeline_is_injected_by_shot_key() -> None:
         "camera_push",
     ]
     assert manifests[2].timeline == []
-    assert manifests[0].metadata["timeline_cue_count"] == 4
+    assert manifests[0].metadata["timeline_cue_count"] == 7
     assert manifests[1].metadata["timeline_cue_count"] == 6
 
 
