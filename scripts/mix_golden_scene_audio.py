@@ -49,11 +49,17 @@ def make_spec(video, scene, shot, duration, planned):
         shot_number=shot,
         duration_seconds=duration,
         cues=planned,
-        dialogue_windows=[
-            DialogueDuckingWindow(
-                start_time_seconds=0.7,
-                end_time_seconds=min(duration, 3.2),
-            )
-        ],
+        dialogue_windows=[DialogueDuckingWindow(start_time_seconds=0.7, end_time_seconds=min(duration, 3.2))],
         target_loudness_lufs=-16,
     )
+
+
+def mix_one(video, rain, effect, scene, shot, duration, start, text):
+    planned = [rain_cue(scene, shot, duration), effect_cue(scene, shot, duration, start, text)]
+    sources = [
+        asset(planned[0].key, SoundCueKind.AMBIENCE, rain),
+        asset(planned[1].key, SoundCueKind.EFFECT, effect),
+    ]
+    rendered = FFmpegSoundMixer().mix(make_spec(video, scene, shot, duration, planned), sources)
+    video.write_bytes(rendered.content)
+    print("GOLDEN_AUDIO_MIXED=" + str(video.resolve()))
