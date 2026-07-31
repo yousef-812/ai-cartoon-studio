@@ -1,3 +1,4 @@
+import importlib.util
 import json
 from pathlib import Path
 
@@ -6,6 +7,14 @@ ROOT = Path(__file__).resolve().parents[3]
 
 def source(path):
     return (ROOT / path).read_text(encoding="utf-8")
+
+
+def load_script(name, path):
+    spec = importlib.util.spec_from_file_location(name, ROOT / path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_workshop_build_runs_quality_upgrade_before_validation():
@@ -48,3 +57,27 @@ def test_review_gate_never_auto_approves_a_render():
     assert '"production_approved": False' in review
     assert '"promotion_blocked": True' in review
     assert '"decision": "pending"' in review
+
+
+def test_procedural_storm_sound_is_deterministic():
+    sound = load_script("golden_sound", "scripts/generate_golden_scene_sound.py")
+    first = sound._rain(0.02)
+    second = sound._rain(0.02)
+    assert first == second
+    assert len(first) == round(0.02 * sound.RATE)
+    assert len(sound._flicker(0.02)) == round(0.02 * sound.RATE)
+    assert len(sound._thunder(0.02)) == round(0.02 * sound.RATE)
+
+
+def test_review_gate_accepts_only_expected_media_contract():
+    review = load_script("golden_review", "scripts/build_golden_scene_review.py")
+    probe = {
+        "format": {"duration": "8.042"},
+        "streams": [
+            {"codec_type": "video", "width": 1280, "height": 720},
+            {"codec_type": "audio", "sample_rate": "48000", "channels": 2},
+        ],
+    }
+    assert all(review._technical_checks(probe).values())
+    probe["streams"][1]["sample_rate"] = "44100"
+    assert not review._technical_checks(probe)["audio_sample_rate_48000"]
