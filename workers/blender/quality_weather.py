@@ -1,3 +1,4 @@
+# ruff: noqa: I001
 import bpy
 
 from quality_common import ensure_anchor, material
