@@ -1,4 +1,6 @@
 import math
+import sys
+from pathlib import Path
 
 import bpy
 
@@ -48,3 +50,24 @@ def ensure_anchor(name, location):
         bpy.context.collection.objects.link(obj)
     obj.location = location
     return obj
+
+
+def set_material(name, value):
+    obj = bpy.data.objects.get(name)
+    if obj is not None:
+        apply_material(obj, value)
+
+
+def set_scale(name, scale, width=0.0):
+    obj = bpy.data.objects.get(name)
+    if obj is None:
+        return
+    obj.scale = scale
+    if width and obj.type == "MESH":
+        bevel(obj, width)
+
+
+def module_path():
+    path = str(Path(__file__).resolve().parent)
+    if path not in sys.path:
+        sys.path.insert(0, path)
