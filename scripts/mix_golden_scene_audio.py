@@ -28,3 +28,14 @@ def rain_cue(scene, shot, duration):
         gain_db=-18,
         loop=True,
     )
+
+
+def effect_cue(scene, shot, duration, start, text):
+    return SoundCueSpec(
+        key=f"scene:{scene}:shot:{shot}:effect",
+        kind=SoundCueKind.EFFECT,
+        prompt=text,
+        start_time_seconds=start,
+        duration_seconds=min(duration - start, 1.8),
+        gain_db=-10,
+    )
