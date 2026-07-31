@@ -1,7 +1,13 @@
 from pathlib import Path
 
 from packages.mixing.ffmpeg import FFmpegSoundMixer
-from packages.sound.models import GeneratedSoundAsset, SoundCueKind
+from packages.sound.models import (
+    DialogueDuckingWindow,
+    GeneratedSoundAsset,
+    SoundCueKind,
+    SoundCueSpec,
+    SoundMixGenerationSpec,
+)
 
 
 def asset(key, kind, path):
