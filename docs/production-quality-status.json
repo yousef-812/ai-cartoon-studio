@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "updated_at": "2026-07-31",
   "active_branch": "agent/series-bible-foundation",
   "pull_request": 1,
@@ -13,7 +13,8 @@
     "next_review_artifacts": [
       "output/golden-scene/contact-sheet.png",
       "output/golden-scene/review.json"
-    ]
+    ],
+    "stale_review_evidence_removed_before_run": true
   },
   "milestones": {
     "M0": {
@@ -24,7 +25,8 @@
         "media_probe",
         "sha256_record",
         "contact_sheet_generator",
-        "promotion_block_default"
+        "promotion_block_default",
+        "stale_review_evidence_cleanup"
       ],
       "remaining": [
         "real_lightning_review_artifact_validation",
@@ -55,11 +57,11 @@
         "lightning_flash",
         "motivated_camera_push",
         "window_lantern_speaking_eye_line",
-        "reusable_rain_assets"
+        "reusable_rain_assets",
+        "animated_rain_window"
       ],
       "remaining": [
         "visual_exposure_review",
-        "rain_motion_timeline",
         "safe_framing_qc"
       ]
     },
@@ -152,6 +154,7 @@
         "resolution_check",
         "sample_rate_check",
         "channel_check",
+        "contact_sheet_evidence",
         "promotion_block"
       ],
       "remaining": [
