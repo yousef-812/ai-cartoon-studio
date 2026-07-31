@@ -39,3 +39,21 @@ def effect_cue(scene, shot, duration, start, text):
         duration_seconds=min(duration - start, 1.8),
         gain_db=-10,
     )
+
+
+def make_spec(video, scene, shot, duration, planned):
+    return SoundMixGenerationSpec(
+        input_video_path=str(video),
+        source_has_dialogue=True,
+        scene_number=scene,
+        shot_number=shot,
+        duration_seconds=duration,
+        cues=planned,
+        dialogue_windows=[
+            DialogueDuckingWindow(
+                start_time_seconds=0.7,
+                end_time_seconds=min(duration, 3.2),
+            )
+        ],
+        target_loudness_lufs=-16,
+    )
