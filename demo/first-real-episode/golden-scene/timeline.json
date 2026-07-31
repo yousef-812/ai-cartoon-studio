@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "shots": {
     "scene:1:shot:1": [
       {
@@ -25,6 +25,39 @@
         "duration_seconds": 0.8,
         "values": [1.0, 0.15, 0.9, 0.05, 0.0],
         "parameters": {}
+      },
+      {
+        "kind": "character_look",
+        "target_object": "Omar_Rig",
+        "start_seconds": 0.12,
+        "duration_seconds": 0.34,
+        "values": [],
+        "parameters": {
+          "focus_object": "ANCHOR_Lantern_Focus",
+          "max_yaw_degrees": 42.0
+        }
+      },
+      {
+        "kind": "character_look",
+        "target_object": "Nader_Rig",
+        "start_seconds": 0.18,
+        "duration_seconds": 0.38,
+        "values": [],
+        "parameters": {
+          "focus_object": "ANCHOR_Lantern_Focus",
+          "max_yaw_degrees": 48.0
+        }
+      },
+      {
+        "kind": "character_look",
+        "target_object": "Omar_Rig",
+        "start_seconds": 0.72,
+        "duration_seconds": 0.28,
+        "values": [],
+        "parameters": {
+          "focus_object": "CAM_Medium",
+          "max_yaw_degrees": 30.0
+        }
       },
       {
         "kind": "camera_push",
@@ -62,7 +95,7 @@
         "duration_seconds": 0.35,
         "values": [],
         "parameters": {
-          "focus_object": "ENV_WindowGlass",
+          "focus_object": "ANCHOR_Window_Focus",
           "max_yaw_degrees": 55.0
         }
       },
@@ -73,7 +106,7 @@
         "duration_seconds": 0.42,
         "values": [],
         "parameters": {
-          "focus_object": "PROP_Lantern",
+          "focus_object": "ANCHOR_Lantern_Focus",
           "max_yaw_degrees": 70.0
         }
       },
