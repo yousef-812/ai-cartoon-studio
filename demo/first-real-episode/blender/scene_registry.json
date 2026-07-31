@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "scene_name": "WorkshopOfLight",
   "characters": {
     "عمر": {
@@ -20,7 +20,9 @@
         "pick_up": "Omar_PickUp",
         "walk": "Omar_Walk",
         "surprised": "Omar_Surprised",
-        "worried": "Omar_Worried"
+        "worried": "Omar_Worried",
+        "react_light_out": "Omar_ReactLightOut",
+        "concern_settle": "Omar_ConcernSettle"
       },
       "default_anchor": "ANCHOR_Omar_Left"
     },
@@ -42,7 +44,9 @@
         "pick_up": "Nader_PickUp",
         "walk": "Nader_Walk",
         "surprised": "Nader_Surprised",
-        "worried": "Nader_Worried"
+        "worried": "Nader_Worried",
+        "react_light_out": "Nader_ReactLightOut",
+        "concern_settle": "Nader_ConcernSettle"
       },
       "default_anchor": "ANCHOR_Nader_Right"
     }
@@ -54,7 +58,9 @@
   },
   "props": {
     "lantern": "PROP_Lantern",
-    "screwdriver": "PROP_Screwdriver"
+    "screwdriver": "PROP_Screwdriver",
+    "window_focus": "ANCHOR_Window_Focus",
+    "lantern_focus": "ANCHOR_Lantern_Focus"
   },
   "default_camera": "wide"
 }
