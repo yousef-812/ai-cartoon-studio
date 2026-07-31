@@ -1,3 +1,4 @@
+# ruff: noqa: I001
 import bpy
 
 from quality_common import apply_material, material, parent_to_bone, smooth
