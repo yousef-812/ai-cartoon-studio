@@ -3,6 +3,8 @@
 This roadmap preserves one final direction: a complete AI cartoon production studio. Each phase adds permanent production capability rather than creating a disposable prototype.
 
 > The active task-level plan, acceptance criteria, status ledger, and Golden Scene quality program are maintained in [Production Quality Execution Roadmap](production-quality-roadmap.md). Every production-quality addition must update that execution roadmap.
+>
+> Machine-readable current milestone state is maintained in [Production Quality Status](production-quality-status.json), with dated implementation evidence under `production-quality-updates/`.
 
 ## Completed production foundation
 
